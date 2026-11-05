@@ -13,7 +13,7 @@ Não é necessário criar conta em um serviço dos mantenedores. A autenticaçã
 
 ## Conheça a interface
 
-![Tela de detalhes, elenco e provedores na interface que deu origem ao OpenCebola](docs/images/Captura de tela de 2026-11-05 20-36-58.png)
+![Tela de detalhes, elenco e provedores na interface que deu origem ao OpenCebola](docs/images/2)
 
 Captura ilustrativa da interface de origem, selecionada sem identificação de conta. Títulos, imagens e disponibilidade são fornecidos por terceiros; não acompanham o projeto como biblioteca de vídeos. A reprodução depende das fontes autorizadas e dos serviços configurados por você. A aparência dos catálogos editoriais também depende da configuração opcional de metadados.
 
