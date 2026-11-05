@@ -1,0 +1,35 @@
+# Bibliotecas de terceiros
+
+## libVLC
+
+Este aplicativo usa **libVLC**, do projeto VideoLAN.
+
+- Código-fonte: https://code.videolan.org/videolan/vlc
+- Versão embutida: 3.6.2 (`org.videolan.android:libvlc-all`)
+
+A biblioteca viaja como arquivo separado dentro do pacote (`libvlc.so`,
+`libvlcjni.so`), sem ligação estática, e pode ser substituída por outra
+compilação compatível.
+
+Este aplicativo **não** é o VLC, não é feito pelo VideoLAN, e não usa o nome
+nem o logotipo do VLC — ambos marcas registradas do VideoLAN.
+
+### Licença
+
+O motor libVLC é distribuído sob a GNU Lesser General Public License versão
+2.1 ou posterior (LGPL-2.1+):
+https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+
+**Porém**, a compilação oficial publicada no Maven Central
+(`libvlc-all:3.6.2`) inclui, ligados estaticamente dentro do `libvlc.so`, os
+módulos `libdvdcss`, `libdvdnav` e `libdvdread`, todos sob GNU General Public
+License versão 2 ou posterior (GPL-2+):
+https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+
+- libdvdcss: https://code.videolan.org/videolan/libdvdcss
+- libdvdnav: https://code.videolan.org/videolan/libdvdnav
+- libdvdread: https://code.videolan.org/videolan/libdvdread
+
+Enquanto essa compilação for a usada, o binário distribuído está sob GPL-2+, e
+não sob LGPL. Ver a decisão **D1** em
+`docs/superpowers/specs/2026-08-24-app-nativo-design.md`.

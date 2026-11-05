@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="ApiTask" extends="Task">
+  <interface>
+    <!-- { "method": "GET|POST", "path": "/v1/...", "body": "json opcional" } -->
+    <field id="request" type="assocarray" />
+    <!-- { "status": int, "body": string }; status 0 = falha de rede -->
+    <field id="response" type="assocarray" alwaysNotify="true" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/ApiTask.brs" />
+  <script type="text/brightscript" uri="pkg:/components/InstanceConfig.brs" />
+</component>

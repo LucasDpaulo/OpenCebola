@@ -1,0 +1,14 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "bundle": {
+    "targets": ["nsis"],
+    "resources": {
+      "gstreamer-staging/bin/*.dll": "./",
+      "gstreamer-staging/plugins/*.dll": "gstreamer/plugins/",
+      "gstreamer-staging/gio-modules/*.dll": "gstreamer/gio-modules/",
+      "gstreamer-staging/gst-plugin-scanner.exe": "gstreamer/gst-plugin-scanner.exe",
+      "mpv-staging/*.dll": "./",
+      "streaming-staging/cebola-streaming-service.exe": "./"
+    }
+  }
+}

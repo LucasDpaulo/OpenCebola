@@ -1,0 +1,54 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "OpenCebola",
+  "version": "0.1.0",
+  "identifier": "org.opencebola.desktop",
+  "build": {
+    "beforeDevCommand": "npm run dev --workspace=@cebola/web -- --hostname localhost --port 3000",
+    "devUrl": "http://localhost:3000",
+    "beforeBuildCommand": "npm run build:web",
+    "frontendDist": "../../web/out"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Cebola PC",
+        "width": 960,
+        "height": 540,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost http://localhost:3001 https:; frame-src https://www.youtube-nocookie.com https://www.youtube.com; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data: https:; media-src 'none'; object-src 'none'; base-uri 'none'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "deb",
+      "appimage"
+    ],
+    "createUpdaterArtifacts": false,
+    "publisher": "OpenCebola contributors",
+    "icon": [
+      "icons/cebola-512.png",
+      "icons/icon.ico"
+    ],
+    "linux": {
+      "deb": {
+        "depends": [
+          "gstreamer1.0-plugins-base",
+          "gstreamer1.0-plugins-good",
+          "libmpv2"
+        ],
+        "recommends": [
+          "gstreamer1.0-libav",
+          "gstreamer1.0-plugins-bad",
+          "gstreamer1.0-plugins-ugly"
+        ]
+      }
+    }
+  },
+  "plugins": {}
+}

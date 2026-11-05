@@ -1,0 +1,3337 @@
+:root {
+  color-scheme: dark;
+  --bg-canvas: #16181d;
+  --bg-surface: #1e2128;
+  --bg-surface-elevated: #262a33;
+  --bg-card: #1c1f26;
+  --accent-red: #527f4d;
+  --accent-red-hover: #638f5c;
+  --accent-red-glow: rgba(82, 127, 77, 0.42);
+  --accent-red-subtle: rgba(82, 127, 77, 0.16);
+  --accent-purple: #806096;
+  --accent-purple-hover: #9877ad;
+  --accent-purple-glow: rgba(128, 96, 150, 0.38);
+  --text-primary: #ffffff;
+  --text-secondary: #e5e7eb;
+  --text-muted: #9ca3af;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-card: rgba(255, 255, 255, 0.07);
+  --border-focus: var(--accent-purple);
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-full: 9999px;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.65);
+  --shadow-glow: 0 0 24px var(--accent-red-glow);
+  /* Margem lateral da página. Navbar, banner, rails e busca precisam começar na MESMA
+     coluna: com valores diferentes, cada faixa da página iniciava alguns pixels adiante. */
+  --page-gutter: clamp(1.25rem, 4.5vw, 4rem);
+
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========================================================================
+   Tema claro. O escuro é o :root acima — são os dois únicos, e o data-theme é
+   escrito no <html> pelo script de layout.tsx, antes da primeira pintura.
+   ========================================================================== */
+html[data-theme="light"],
+body[data-theme="light"] {
+  color-scheme: light;
+  --bg-canvas: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #f1f5f9;
+  --bg-card: #ffffff;
+  --accent-red: #0f172a;
+  --accent-red-hover: #1e293b;
+  --accent-red-glow: rgba(15, 23, 42, 0.2);
+  --accent-red-subtle: rgba(15, 23, 42, 0.08);
+  --accent-purple: #334155;
+  --accent-purple-hover: #475569;
+  --accent-purple-glow: rgba(51, 65, 85, 0.2);
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --border-subtle: rgba(15, 23, 42, 0.1);
+  --border-card: rgba(15, 23, 42, 0.08);
+  --border-focus: #0f172a;
+  /* As sombras do :root são preto a 90% — calibradas para flutuar sobre uma página preta, onde
+     mal se veem. Sobre branco, a mesma sombra vira um borrão escuro em volta de cada cartão.
+     Aqui elas voltam a ser o que devem ser: um fio de profundidade, não uma mancha. */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 3px 10px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+button, a, input, select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline-color: var(--accent-purple);
+}
+
+/* ==========================================================================
+   App Shell & Navbar
+   ========================================================================== */
+@keyframes appFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.app-shell {
+  min-height: 100vh;
+  position: relative;
+  background: var(--bg-canvas);
+  animation: appFadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4.8rem;
+  padding: 0 var(--page-gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 100;
+  /* A navbar é escura nos dois temas, e não por descuido: o texto e os ícones dela são brancos
+     porque ela vive por cima da arte do filme. */
+  background: linear-gradient(180deg, rgba(22, 24, 29, 0.94) 0%, rgba(22, 24, 29, 0.65) 60%, transparent 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: background 0.3s ease;
+}
+
+/* No claro o degradê não tinha para onde se dissolver: embaixo dele vem a página branca, e o
+   esfumado virava uma faixa cinza no topo. Preto e reto — a mesma leitura da parte do filme. */
+html[data-theme="light"] .navbar {
+  background: #16181d;
+  /* A barra é escura mesmo no tema claro, então o que vive dentro dela precisa da paleta
+     escura. Redefinir os tokens aqui alcança tudo de uma vez — sem isto, a marca (que usa
+     --accent-red) ficava azul-escura sobre preto e simplesmente sumia. */
+  --accent-red: #527f4d;
+  --accent-red-hover: #638f5c;
+  --accent-red-glow: rgba(82, 127, 77, 0.42);
+  --accent-purple: #806096;
+  --accent-purple-glow: rgba(128, 96, 150, 0.38);
+  --text-primary: #ffffff;
+  --text-secondary: #e5e5e5;
+  --text-muted: #a0a0a0;
+  --border-subtle: rgba(255, 255, 255, 0.12);
+}
+
+.navbar-brand-section {
+  display: flex;
+  align-items: center;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--accent-red);
+  text-decoration: none;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.brand:hover,
+.brand:focus-visible {
+  transform: scale(1.06);
+  opacity: 0.95;
+}
+
+.brand-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-red);
+  filter: drop-shadow(0 0 10px rgba(82, 127, 77, 0.42));
+  transition: filter 0.2s ease;
+}
+
+.brand:hover .brand-icon-wrapper {
+  filter: drop-shadow(0 0 14px rgba(82, 127, 77, 0.7));
+}
+
+/* Botão de seções do celular. Só existe abaixo de 768px, onde ocupa o lugar da marca: a
+   navegação era escondida ali sem nada no lugar, e Filmes, Séries, Anime e Brasil ficavam
+   inalcançáveis. No desktop ele não é renderizado (display: none logo abaixo). */
+.navbar-menu-btn {
+  display: none;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 0.55rem 0.35rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.32rem;
+  width: 2.6rem;
+  border-radius: 0.5rem;
+  transition: background 0.2s ease;
+}
+
+.navbar-menu-btn span {
+  display: block;
+  height: 2px;
+  width: 1.35rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.88);
+  transition: transform 0.22s ease, opacity 0.22s ease;
+}
+
+.navbar-menu-btn:hover,
+.navbar-menu-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Aberto, as três linhas viram um X — o mesmo botão fecha o menu. */
+.navbar-menu-btn[aria-expanded="true"] span:nth-child(1) {
+  transform: translateY(0.54rem) rotate(45deg);
+}
+
+.navbar-menu-btn[aria-expanded="true"] span:nth-child(2) {
+  opacity: 0;
+}
+
+.navbar-menu-btn[aria-expanded="true"] span:nth-child(3) {
+  transform: translateY(-0.54rem) rotate(-45deg);
+}
+
+.navbar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.navbar-center a {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  position: relative;
+  padding: 0.45rem 0;
+  transition: color 0.2s ease;
+}
+
+.navbar-center a:hover,
+.navbar-center a:focus-visible {
+  color: #ffffff;
+}
+
+.navbar-center a.active {
+  color: #ffffff;
+  font-weight: 750;
+}
+
+.navbar-center a.active::after {
+  background: #ffffff;
+  border-radius: 9999px;
+  bottom: -0.15rem;
+  content: "";
+  height: 2px;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  margin-left: auto;
+}
+
+.navbar-icon-btn {
+  background: transparent;
+  border: 0;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.navbar-icon-btn:hover {
+  color: #ffffff;
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.profile-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.28rem 0.65rem 0.28rem 0.28rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.profile-chip:hover,
+.profile-chip:focus-visible,
+details[open] > .profile-chip {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.profile-chip-name {
+  max-width: 7rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #f3f4f6;
+}
+
+.profile-chip-chevron {
+  color: #9ca3af;
+  transition: transform 0.2s ease;
+  margin-right: 0.15rem;
+}
+
+details[open] .profile-chip-chevron {
+  transform: rotate(180deg);
+}
+
+.profile-avatar-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.profile-menu { position: relative; }
+.profile-menu summary { list-style: none; outline: none; }
+.profile-menu summary::-webkit-details-marker { display: none; }
+
+.profile-menu-panel {
+  position: absolute;
+  z-index: 90;
+  top: calc(100% + 0.75rem);
+  right: 0;
+  width: min(21.5rem, calc(100vw - 2rem));
+  padding: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  background: rgba(28, 31, 38, 0.96);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  animation: modalScaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.profile-menu-header {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.6rem 0.7rem 0.8rem;
+}
+
+.profile-menu-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.85rem;
+  height: 2.85rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 800;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.profile-menu-user-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.profile-menu-user-name {
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-menu-user-status {
+  color: #9ca3af;
+  font-size: 0.78rem;
+  font-weight: 500;
+  margin-top: 0.2rem;
+}
+
+.profile-menu-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #f3f4f6;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.profile-menu-edit-btn:hover,
+.profile-menu-edit-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+
+.profile-menu-divider {
+  height: 1px;
+  margin: 0.55rem 0;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.profile-menu-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.profile-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 0.75rem 0.85rem;
+  background: transparent;
+  color: #d1d5db;
+  text-align: left;
+  text-decoration: none;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.profile-menu-item svg {
+  color: #9ca3af;
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+}
+
+.profile-menu-item:hover,
+.profile-menu-item:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  outline: none;
+}
+
+.profile-menu-item:hover svg {
+  color: #ffffff;
+}
+
+.profile-menu-item-danger {
+  color: #f87171;
+}
+
+.profile-menu-item-danger svg {
+  color: #f87171;
+}
+
+.profile-menu-item-danger:hover,
+.profile-menu-item-danger:focus-visible {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+
+.profile-menu-item-danger:hover svg {
+  color: #ef4444;
+}
+
+/* ==========================================================================
+   Hero Spotlight
+   ========================================================================== */
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  align-items: flex-end;
+  padding: 8rem var(--page-gutter) 6.5rem;
+  background-image: var(--hero-background);
+  background-size: cover;
+  background-position: center 20%;
+  background-repeat: no-repeat;
+  overflow: hidden;
+  cursor: grab;
+  user-select: none;
+  transition: background-image 0.4s ease-in-out;
+}
+
+@media (max-width: 1366px) {
+  .hero {
+    background-image: var(--hero-background-compact, var(--hero-background));
+  }
+}
+
+.hero.dragging {
+  cursor: grabbing;
+}
+
+.hero-default-bg {
+  background:
+    radial-gradient(circle at 80% 30%, rgba(82, 127, 77, 0.22) 0%, transparent 45%),
+    linear-gradient(135deg, #16181d 0%, #1e222a 45%, #272c35 80%, #303742 100%);
+}
+
+.hero-compact {
+  min-height: 23rem;
+  padding-bottom: 4rem;
+}
+
+/* ==========================================================================
+   Teaser (trailer do TMDB tocando como pano de fundo)
+   ========================================================================== */
+
+/* O quadro do YouTube é sempre 16:9; a caixa que o recebe quase nunca é. As unidades `cq`
+   medem o container e dão o menor retângulo que o cobre.
+
+   A ampliação para recortar a interface do YouTube é feita no tamanho real do iframe, e não em
+   `transform: scale()`: o YouTube escolhe a resolução a partir do viewport antes de transforms.
+   Antes ele enxergava uma área 36% menor e a imagem era ampliada pelo browser, o que deixava os
+   trailers borrados em telas grandes. */
+.teaser-frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transform-origin: center center;
+  width: max(136cqw, 241.7778cqh);
+  height: max(136cqh, 76.5cqw);
+  border: 0;
+  pointer-events: none !important;
+  transition: opacity 0.45s ease;
+  z-index: 1;
+}
+
+.hero-teaser {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  container-type: size;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Controles do Teaser (Botão de Áudio e Botão de Expandir Pop-up)
+   -------------------------------------------------------------------------- */
+.teaser-controls {
+  position: absolute;
+  bottom: 0.65rem;
+  right: 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  z-index: 25;
+  pointer-events: auto;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.2s ease;
+}
+
+.teaser-controls.is-visible {
+  opacity: 1;
+}
+
+.hero-teaser .teaser-controls {
+  bottom: 2.2rem;
+  right: 2.5rem;
+}
+
+.teaser-control-btn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.teaser-control-btn:hover {
+  background: rgba(0, 0, 0, 0.95);
+  border-color: rgba(255, 255, 255, 0.75);
+  transform: scale(1.12);
+  color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   Modal Pop-up de Vídeo Teaser (Expandido)
+   -------------------------------------------------------------------------- */
+.teaser-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(14px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: teaserModalFade 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.teaser-modal-container {
+  width: min(92vw, 1020px);
+  background: #1e2128;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-sm, 0.5rem);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.85);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.teaser-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.2rem;
+  background: #262a33;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.teaser-modal-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.teaser-modal-close {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 0;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1.1rem;
+}
+
+.teaser-modal-close:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.08);
+}
+
+.teaser-modal-video {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+
+.teaser-modal-video iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+@keyframes teaserModalFade {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Declarado junto da mídia do card, mais abaixo: aqui só se marca que ela é um container de
+   consulta, que é o que faz as unidades `cq` do teaser medirem a caixa certa. */
+.editorial-card-media {
+  container-type: size;
+}
+
+.hero-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(22, 24, 29, 0.82) 0%, rgba(22, 24, 29, 0.35) 45%, transparent 75%),
+    linear-gradient(0deg, var(--bg-canvas) 0%, rgba(22, 24, 29, 0.45) 15%, transparent 38%),
+    linear-gradient(180deg, rgba(22, 24, 29, 0.4) 0%, transparent 20%);
+  pointer-events: none;
+}
+
+/* No tema claro o esfumado de baixo não escondia nada: ele misturava a arte com a página branca
+   e virava uma faixa cinza suja entre as duas. O corte reto é o que a referência (MUBI) faz.
+   As sombras da esquerda e do topo ficam nos dois temas — são elas que seguram a leitura do
+   título e da navbar por cima da imagem. */
+html[data-theme="light"] .hero-vignette {
+  background:
+    linear-gradient(90deg, rgba(22, 24, 29, 0.82) 0%, rgba(22, 24, 29, 0.35) 45%, transparent 75%),
+    linear-gradient(180deg, rgba(22, 24, 29, 0.4) 0%, transparent 20%);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 44rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+/* Pôster retrato do destaque: só existe no layout mobile (estilo Netflix), onde a arte
+   paisagem vira fundo desfocado. No desktop/TV a paisagem continua sendo o próprio fundo do
+   hero, então este elemento fica oculto — a regra mobile completa está na media query. */
+.hero-poster {
+  display: none;
+}
+
+.hero-side-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 3.5rem;
+  height: 6.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 2.8rem;
+  font-weight: 200;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.hero-side-arrow:hover {
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.55);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-50%) scale(1.05);
+}
+
+.hero-side-arrow-prev {
+  left: 0;
+  border-radius: 0 1rem 1rem 0;
+  border-left: 0;
+}
+
+.hero-side-arrow-next {
+  right: 0;
+  border-radius: 1rem 0 0 1rem;
+  border-right: 0;
+}
+
+.hero-title-link {
+  text-decoration: none;
+  color: inherit;
+  display: inline-flex;
+  align-items: flex-end;
+  max-width: 100%;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.hero-title-link:hover {
+  opacity: 0.95;
+}
+
+.hero-title-logo-link {
+  display: flex;
+  align-items: flex-end;
+  margin: 0.25rem 0;
+}
+
+.hero-logo-img {
+  display: block;
+  max-width: min(28rem, 74vw);
+  max-height: clamp(4.5rem, 14vw, 9.5rem);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: left bottom;
+  filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.9)) drop-shadow(0 1px 4px rgba(0, 0, 0, 0.95));
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  user-select: none;
+  pointer-events: none;
+}
+
+.hero-title-link:hover .hero-logo-img,
+.hero-title-link:focus-visible .hero-logo-img {
+  transform: scale(1.03);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.hero-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.hero-meta-text {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: #f3f4f6;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95);
+  flex-wrap: wrap;
+}
+
+.hero-meta-bullet {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.85rem;
+}
+
+.hero-meta-part {
+  color: #f3f4f6;
+}
+
+.hero-meta-vote {
+  color: #facc15;
+  font-weight: 800;
+}
+
+.hero-meta-genres {
+  color: #e5e7eb;
+  font-weight: 500;
+}
+
+.badge-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  background: var(--accent-red);
+  border: 1px solid var(--accent-red);
+  border-radius: var(--radius-xs);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.provider-badge.has-logo {
+  background: rgba(8, 10, 14, 0.82);
+  border-color: rgba(255, 255, 255, 0.22);
+  padding: 0.22rem 0.42rem;
+}
+
+.provider-badge img {
+  display: block;
+  height: 1.35rem;
+  max-width: 5.5rem;
+  object-fit: contain;
+  width: auto;
+}
+
+.editorial-card-provider {
+  align-items: center;
+  background: rgba(8, 10, 14, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 0.35rem;
+  bottom: 0.45rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  display: flex;
+  height: 1.75rem;
+  justify-content: center;
+  max-width: 5.7rem;
+  padding: 0.18rem 0.32rem;
+  pointer-events: none;
+  position: absolute;
+  right: 0.45rem;
+  z-index: 2;
+}
+
+.editorial-card-provider img {
+  display: block;
+  height: 100%;
+  max-width: 4.9rem;
+  object-fit: contain;
+  width: auto;
+}
+
+.badge-rating {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  border-radius: 0.25rem;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.badge-meta {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.hero-title {
+  margin: 0;
+  font-size: clamp(2.4rem, 5.5vw, 4.4rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  color: #fff;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+}
+
+.hero-credits {
+  margin: 0;
+  color: #f3f4f6;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95);
+}
+
+.hero-credits strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.hero-description {
+  margin: 0;
+  color: #f3f4f6;
+  font-size: clamp(0.96rem, 1.2vw, 1.05rem);
+  line-height: 1.6;
+  max-width: 38rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95);
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.hero-watch-btn {
+  height: 2.85rem;
+  min-height: 2.85rem;
+  padding: 0 1.65rem;
+  background: #ffffff;
+  color: #000000;
+  font-size: 1rem;
+  font-weight: 850;
+  border-radius: 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.hero-watch-btn:hover {
+  background: rgba(255, 255, 255, 0.85);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255, 255, 255, 0.25);
+  color: #000000;
+}
+
+.hero-circle-btn,
+.hero-library-button {
+  width: 2.85rem;
+  height: 2.85rem;
+  min-height: 2.85rem;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(22, 24, 29, 0.65);
+  color: #ffffff;
+  font-size: 1.15rem;
+  font-weight: 700;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.hero-circle-btn:hover,
+.hero-library-button:hover,
+.hero-library-button:focus-visible {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.8);
+  transform: scale(1.08);
+  color: #ffffff;
+}
+
+/* Rótulo dos botões circulares de ação: só aparece no layout mobile, empilhado sob o ícone
+   (estilo Netflix). No desktop os botões permanecem só com o ícone. */
+.hero-btn-label {
+  display: none;
+}
+
+.hero-carousel-controls {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.hero-dots {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.hero-dot-circle {
+  background: transparent;
+  border: 0;
+  padding: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.hero-dot-circle:hover {
+  transform: scale(1.2);
+}
+
+.hero-dot-bullet {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  transition: all 0.2s ease;
+}
+
+.hero-dot-circle:hover .hero-dot-bullet {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.hero-dot-ring {
+  transform: rotate(-90deg);
+}
+
+.hero-dot-progress {
+  animation: hero-circle-progress 10s linear forwards;
+}
+
+@keyframes hero-circle-progress {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 3rem;
+  padding: 0 1.6rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.98rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.btn-primary {
+  background: #ffffff;
+  color: #000000;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.btn-primary:hover,
+.btn-primary:focus-visible {
+  background: rgba(255, 255, 255, 0.85);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(255, 255, 255, 0.3);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus-visible {
+  background: rgba(255, 255, 255, 0.24);
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   Rails & Media Cards (Centralizado com Espaçamento Lateral estilo MUBI)
+   ========================================================================== */
+.rails {
+  position: relative;
+  z-index: 10;
+  /* Sem teto de largura: as rails são de rolagem horizontal, então limitá-las a 1460px não
+     "organizava" nada — só criava uma faixa morta dos dois lados, maior que a própria margem,
+     e desalinhava as rails do banner e da navbar, que sempre foram de ponta a ponta. */
+  width: 100%;
+  padding: 0 var(--page-gutter) 6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3.2rem;
+}
+
+.rail {
+  position: relative;
+  /* `content-visibility: auto` saiu daqui: ele aplica `contain: paint`, o que faz a rail virar
+     bloco de contenção e RECORTAR qualquer elemento `fixed` dentro dela — inclusive o painel do
+     card, que precisa passar por cima da seção seguinte. São poucas rails; o ganho não paga. */
+}
+
+.rail-header {
+  padding: 0;
+  margin-bottom: 0.9rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.rail-title {
+  margin: 0;
+  font-size: clamp(1.2rem, 1.8vw, 1.45rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.rail-subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 500;
+}
+
+/* Recomendação pessoal é uma vitrine, não uma fileira comum de pôsteres. */
+.personalized-showcase {
+  --personalized-card-width: min(78rem, calc(100vw - 4rem));
+  margin-inline: calc(-1 * var(--page-gutter));
+  position: relative;
+}
+
+.personalized-showcase > .rail-header { padding-inline: var(--page-gutter); }
+
+.personalized-showcase-scroll {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  padding-inline: var(--page-gutter);
+  padding-bottom: 0.8rem;
+  scroll-padding-inline: var(--page-gutter);
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.personalized-showcase-scroll::-webkit-scrollbar { display: none; }
+
+.personalized-showcase-card {
+  aspect-ratio: 16 / 7;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  flex: 0 0 var(--personalized-card-width);
+  overflow: hidden;
+  position: relative;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
+.personalized-showcase-art {
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  position: absolute;
+  width: 100%;
+}
+
+.personalized-showcase-shade {
+  background:
+    linear-gradient(90deg, rgba(8, 10, 14, 0.96) 0%, rgba(8, 10, 14, 0.82) 32%, rgba(8, 10, 14, 0.18) 68%, rgba(8, 10, 14, 0.08) 100%),
+    linear-gradient(0deg, rgba(8, 10, 14, 0.78), transparent 55%);
+  inset: 0;
+  position: absolute;
+}
+
+.personalized-showcase-content {
+  bottom: clamp(1.2rem, 3vw, 2.4rem);
+  color: #fff;
+  left: clamp(1.2rem, 3vw, 2.8rem);
+  max-width: min(31rem, 48%);
+  position: absolute;
+  text-shadow: 0 2px 12px #000;
+  z-index: 3;
+}
+
+.personalized-showcase-reason {
+  color: #c7d8c2;
+  font-size: clamp(0.7rem, 1vw, 0.86rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.5rem;
+}
+
+.personalized-showcase-content h3 {
+  font-size: clamp(1.8rem, 3vw, 3.5rem);
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+  margin: 0 0 0.8rem;
+  text-wrap: balance;
+}
+
+.personalized-showcase-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.8rem;
+  margin: 0 0 0.55rem;
+}
+
+.personalized-showcase-facts span { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
+
+.personalized-showcase-people,
+.personalized-showcase-overview {
+  display: -webkit-box;
+  font-size: clamp(0.78rem, 1.1vw, 0.96rem);
+  line-height: 1.45;
+  margin: 0.35rem 0 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+}
+
+.personalized-showcase-people { -webkit-line-clamp: 1; font-weight: 700; }
+.personalized-showcase-overview { -webkit-line-clamp: 3; color: rgba(255, 255, 255, 0.88); }
+
+.personalized-showcase-provider {
+  background: rgba(8, 10, 14, 0.84);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 0.4rem;
+  bottom: 0.8rem;
+  padding: 0.25rem 0.4rem;
+  position: absolute;
+  right: 0.8rem;
+  z-index: 3;
+}
+
+.personalized-showcase-provider img { display: block; height: 1.5rem; max-width: 5rem; object-fit: contain; }
+.personalized-showcase-open { inset: 0; position: absolute; z-index: 4; }
+.personalized-showcase-open:focus-visible { box-shadow: inset 0 0 0 3px var(--border-focus); outline: none; }
+
+/* Vencedores do Emmy: mesmo card do showcase, com um selo dourado e as categorias como chips. */
+.emmy-showcase-reason { color: var(--accent-gold, #e7c46b); }
+.emmy-badge { margin-right: 0.15rem; }
+
+.emmy-showcase-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.5rem 0 0;
+}
+
+.emmy-category-chip {
+  background: rgba(231, 196, 107, 0.16);
+  border: 1px solid rgba(231, 196, 107, 0.45);
+  border-radius: 999px;
+  color: #f3e2b4;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.3rem 0.6rem;
+}
+
+.rail-wrapper {
+  position: relative;
+  /* Sem `isolation: isolate`. Ele criava um contexto de empilhamento por rail, e o painel do
+     card — que precisa passar por cima da SEÇÃO SEGUINTE — ficava preso dentro da rail de
+     origem: a rail de baixo, por vir depois no DOM, pintava por cima dele e cortava a metade
+     das informações. */
+}
+
+.rail-wrapper::before,
+.rail-wrapper::after {
+  content: "";
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  bottom: 0;
+  width: var(--page-gutter);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.rail-wrapper.can-scroll-left::before,
+.rail-wrapper.can-scroll-right::after {
+  opacity: 1;
+}
+
+/* No claro elas viravam um véu branco por cima do primeiro e do último card — apagavam a arte
+   em vez de sugerir rolagem. As setas continuam dizendo que há mais para o lado. */
+html[data-theme="light"] .rail-wrapper::before,
+html[data-theme="light"] .rail-wrapper::after {
+  content: none;
+}
+
+/* O tom intermediário era `rgba(10,10,10,0.76)` fixo: no tema claro virava um borrão escuro
+   sobre o fundo branco, nos dois lados de toda rail. Derivar do fundo resolve nos dois temas. */
+.rail-wrapper::before {
+  left: 0;
+  background: linear-gradient(
+    90deg,
+    var(--bg-canvas) 0%,
+    color-mix(in srgb, var(--bg-canvas) 76%, transparent) 28%,
+    transparent 100%
+  );
+}
+
+.rail-wrapper::after {
+  right: 0;
+  background: linear-gradient(
+    270deg,
+    var(--bg-canvas) 0%,
+    color-mix(in srgb, var(--bg-canvas) 76%, transparent) 28%,
+    transparent 100%
+  );
+}
+
+.rail-scroll {
+  display: flex;
+  gap: 1.15rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: 0.8rem 0 1.4rem;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+
+.rail-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.rail-scroll:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: -2px;
+}
+
+.rail-nav-btn {
+  position: absolute;
+  top: calc(50% - 1.4rem);
+  transform: translateY(-50%);
+  width: 2.3rem;
+  height: 4.4rem;
+  background: color-mix(in srgb, var(--bg-surface) 72%, transparent);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-size: 1.8rem;
+  font-weight: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  backdrop-filter: blur(7px);
+  border-radius: var(--radius-full);
+  transition: opacity 0.22s ease, background 0.22s ease, transform 0.22s ease;
+  opacity: 0;
+}
+
+.rail-nav-prev {
+  left: 0.75rem;
+}
+
+.rail-nav-next {
+  right: 0.75rem;
+}
+
+.rail-nav-btn:hover,
+.rail-nav-btn:focus-visible {
+  background: rgba(38, 38, 38, 0.88);
+  border-color: #d8c6e3;
+  color: #fff;
+  opacity: 1;
+  transform: translateY(-50%) scale(1.05);
+}
+
+.rail-wrapper:hover .rail-nav-btn,
+.rail-wrapper:focus-within .rail-nav-btn { opacity: 0.8; }
+
+@media (hover: none) {
+  .rail-nav-btn { opacity: 0.75; }
+}
+
+/* --------------------------------------------------------------------------
+   Card Vertical: Catálogos (2:3 Cinema Poster)
+   -------------------------------------------------------------------------- */
+.poster-card {
+  flex: 0 0 clamp(9rem, 11.5vw, 12.5rem);
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  scroll-snap-align: start;
+  position: relative;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 0.25s ease;
+}
+
+.poster-card:hover,
+.poster-card:focus-visible {
+  transform: translateY(-8px) scale(1.04);
+  border-color: var(--accent-red);
+  /* Pelo token: preto a 85% em volta de uma capa branca vira uma mancha, não profundidade. */
+  box-shadow: var(--shadow-lg);
+  z-index: 5;
+  outline: none;
+}
+
+.poster-media {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.poster-media > img,
+.progress-media > img,
+.top-ten-poster > img,
+.landscape-media > img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.landscape-media > img { position: absolute; inset: 0; }
+
+.poster-media-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.fallback-initials {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  color: color-mix(in srgb, var(--text-primary) 82%, transparent);
+  text-shadow: 0 4px 16px color-mix(in srgb, var(--bg-canvas) 55%, transparent);
+}
+
+.poster-card-info {
+  padding: 0.75rem 0.8rem 0.85rem;
+  background: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.poster-card-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.poster-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* --------------------------------------------------------------------------
+   Card editorial: formato pôster clássico com sinopse e detalhes
+   -------------------------------------------------------------------------- */
+.editorial-card {
+  flex: 0 0 clamp(9rem, 11.5vw, 12.5rem);
+  aspect-ratio: 2 / 3;
+  color: #fff;
+  position: relative;
+  scroll-snap-align: start;
+}
+
+.rail-more-card {
+  align-items: center;
+  aspect-ratio: 2 / 3;
+  background: color-mix(in srgb, var(--bg-card) 88%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--text-muted) 48%, transparent);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  flex: 0 0 clamp(9rem, 11.5vw, 12.5rem);
+  flex-direction: column;
+  gap: .55rem;
+  justify-content: center;
+  scroll-snap-align: start;
+  transition: border-color .2s ease, color .2s ease, transform .2s ease;
+}
+
+.rail-more-card span { font-size: 2.8rem; font-weight: 200; line-height: 1; }
+.rail-more-card small { font-size: .78rem; font-weight: 700; }
+.rail-more-card:hover,
+.rail-more-card:focus-visible { border-color: var(--text-primary); color: var(--text-primary); outline: none; transform: translateY(-6px); }
+
+/* Alto o bastante para passar por cima das rails seguintes e das setas de rolagem (z-index 20),
+   e ainda abaixo da navbar (100), que continua sendo a camada de cima da página. */
+.editorial-card.is-open {
+  z-index: 60;
+}
+
+.editorial-discovery-card {
+  display: block;
+  flex-basis: clamp(9rem, 11.5vw, 12.5rem);
+  aspect-ratio: 2 / 3;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.editorial-discovery-card:hover,
+.editorial-discovery-card:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 3px;
+  transform: translateY(-0.35rem);
+}
+
+.editorial-card-media {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-sm);
+  inset: 0;
+  overflow: hidden;
+  position: absolute;
+  transform-origin: center center;
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 0.22s ease;
+}
+
+/* 1º Estágio: Passar o mouse destaca o pôster imediatamente (estilo Netflix) */
+.editorial-card:hover .editorial-card-media,
+.editorial-card:focus-visible .editorial-card-media {
+  transform: translateY(-6px) scale(1.04);
+  border-color: color-mix(in srgb, var(--text-primary) 38%, transparent);
+  box-shadow: var(--shadow-lg);
+  z-index: 5;
+}
+
+.editorial-card-media > img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  transition: filter 0.28s ease, transform 0.45s ease;
+  width: 100%;
+  border-radius: inherit;
+}
+
+.editorial-card-open {
+  inset: 0;
+  position: absolute;
+  z-index: 1;
+}
+
+.editorial-card-open:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: -3px;
+}
+
+/*
+ * 2º Estágio: Card de preview unificado expandido (Hover Popup estilo Netflix).
+ * Abre após manter o mouse em cima por ~650ms com animação cinematográfica e suave.
+ */
+.editorial-preview-card {
+  position: fixed;
+  background: var(--bg-surface);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 28%, transparent);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.9), 0 6px 16px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 250;
+  animation: previewCardZoom 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes previewCardZoom {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editorial-preview-card {
+    animation: none;
+  }
+}
+
+.editorial-preview-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  overflow: hidden;
+  container-type: size;
+}
+
+.editorial-preview-media > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+  display: block;
+}
+
+.editorial-preview-body {
+  padding: 0.85rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  background: var(--bg-surface);
+}
+
+.editorial-card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.editorial-card-panel-title {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.editorial-card-panel-title:hover {
+  color: var(--accent-red-hover);
+}
+
+.editorial-card-description {
+  color: var(--text-secondary);
+  display: -webkit-box;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.editorial-card-facts {
+  align-items: center;
+  color: var(--text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.72rem;
+  font-weight: 700;
+  gap: 0.3rem 0.65rem;
+  letter-spacing: 0.04em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.editorial-card-credit,
+.editorial-card-provider {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  line-height: 1.35;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editorial-card-provider {
+  color: var(--accent-red);
+  font-weight: 700;
+}
+
+/* Só em aparelho sem ponteiro, onde o painel do card nunca abre. */
+.editorial-card-touch-save { display: none; }
+
+@media (hover: none) {
+  .editorial-card-touch-save {
+    align-items: center;
+    background: rgba(10, 10, 10, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    color: #fff;
+    display: inline-flex;
+    font-size: 1.15rem;
+    font-weight: 800;
+    height: 2.1rem;
+    justify-content: center;
+    position: absolute;
+    right: 0.6rem;
+    top: 0.6rem;
+    width: 2.1rem;
+    z-index: 3;
+  }
+}
+
+.editorial-card-save {
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 50%;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 1.15rem;
+  font-weight: 800;
+  height: 2rem;
+  justify-content: center;
+  min-height: 2rem;
+  padding: 0;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  width: 2rem;
+  flex-shrink: 0;
+}
+
+.editorial-card-save:hover,
+.editorial-card-save:focus-visible {
+  background: var(--accent-red-subtle);
+  border-color: var(--accent-red);
+  outline: none;
+}
+
+.landscape-card {
+  position: relative;
+  flex: 0 0 clamp(18rem, 27vw, 26rem);
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-sm);
+  scroll-snap-align: start;
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.landscape-card:hover,
+.landscape-card:focus-within {
+  transform: translateY(-6px);
+  border-color: var(--accent-purple);
+}
+
+.landscape-card > a { display: block; width: 100%; height: 100%; color: #fff; text-decoration: none; }
+
+.landscape-media {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-card) center / cover no-repeat;
+}
+
+.landscape-media::after {
+  content: "";
+  position: absolute;
+  inset: 35% 0 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.92));
+}
+
+.landscape-copy {
+  position: absolute;
+  z-index: 2;
+  left: 1rem;
+  right: 3.4rem;
+  bottom: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  text-shadow: 0 2px 8px #000;
+}
+
+.landscape-copy strong { font-size: 1.05rem; }
+.landscape-copy small { margin-top: 0.1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #eee; font-size: 0.7rem; text-transform: uppercase; }
+
+.landscape-save {
+  position: absolute;
+  z-index: 3;
+  right: 0.85rem;
+  bottom: 0.75rem;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid #fff;
+  border-radius: 50%;
+  background: rgba(20, 20, 20, 0.62);
+  color: #fff;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.landscape-save:hover,
+.landscape-save:focus-visible { background: #fff; color: #111; outline: none; }
+
+.award-card {
+  flex-basis: clamp(13rem, 19vw, 18rem);
+  aspect-ratio: 4 / 5;
+}
+
+.award-card .landscape-media { background-position: center top; }
+
+/* Selo mínimo de premiação: uma única faixa de tecido, sem cobrir a arte ou o título. */
+.award-ribbon {
+  position: absolute;
+  z-index: 7;
+  top: 0;
+  right: 0.6rem;
+  width: 1.05rem;
+  height: 1.55rem;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.75));
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+}
+
+.award-ribbon-winner { background: #b98a25; }
+.award-ribbon-nominee { background: #3f8a5c; }
+.editorial-preview-media .award-ribbon { right: 0.8rem; width: 1.2rem; height: 1.75rem; }
+
+.top-ten-card {
+  display: flex;
+  align-items: flex-end;
+  flex: 0 0 auto;
+  color: inherit;
+  text-decoration: none;
+  scroll-snap-align: start;
+  position: relative;
+  user-select: none;
+}
+
+.top-ten-rank {
+  flex: 0 0 auto;
+  margin-right: clamp(-1.2rem, -2vw, -2.2rem);
+  margin-bottom: -0.35rem;
+  color: var(--bg-canvas);
+  font-size: clamp(7rem, 12.5vw, 13.5rem);
+  font-weight: 950;
+  line-height: 0.72;
+  letter-spacing: -0.1em;
+  -webkit-text-stroke: 2px color-mix(in srgb, var(--text-primary) 55%, transparent);
+  text-shadow: 0 4px 18px color-mix(in srgb, var(--bg-canvas) 80%, transparent);
+  z-index: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+.top-ten-poster {
+  flex: 0 0 clamp(9rem, 11.5vw, 12.5rem);
+  aspect-ratio: 2 / 3;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card) center / cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 900;
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 0.22s ease;
+}
+
+.top-ten-card:hover .top-ten-poster,
+.top-ten-card:focus-visible .top-ten-poster {
+  transform: scale(1.04);
+  border-color: color-mix(in srgb, var(--text-primary) 38%, transparent);
+  box-shadow: var(--shadow-lg);
+}
+
+.top-ten-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.top-ten-wrapper::before,
+.top-ten-wrapper::after { content: none; }
+
+.top-ten-scroll {
+  gap: 1.15rem;
+  padding: 0.8rem 0 1.4rem;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+
+.top-ten-rail { margin-bottom: 0; }
+
+/* --------------------------------------------------------------------------
+   Card de Continuar Assistindo (Pôster 2:3 Integrado, Elegante estilo Netflix)
+   -------------------------------------------------------------------------- */
+.progress-card {
+  flex: 0 0 clamp(8.75rem, 11.5vw, 11.5rem);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  scroll-snap-align: start;
+  position: relative;
+  border: 1px solid var(--border-card);
+  background: var(--bg-card);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease;
+}
+
+.progress-card:hover,
+.progress-card:focus-visible {
+  transform: translateY(-6px) scale(1.03);
+  border-color: color-mix(in srgb, var(--text-primary) 35%, transparent);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65), 0 4px 12px rgba(0, 0, 0, 0.45);
+  z-index: 5;
+  outline: none;
+}
+
+.progress-media {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-surface-elevated);
+}
+
+.progress-media > img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.35s ease;
+}
+
+.progress-card:hover .progress-media > img {
+  transform: scale(1.05);
+}
+
+.progress-remove-btn {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.15s ease, border-color 0.15s ease;
+  backdrop-filter: blur(8px);
+  padding: 0;
+}
+
+.progress-card:hover .progress-remove-btn,
+.progress-card:focus-within .progress-remove-btn,
+.progress-remove-btn:focus-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.progress-remove-btn:hover {
+  background: var(--accent-red, #dc2626);
+  border-color: var(--accent-red, #dc2626);
+  color: #ffffff;
+  transform: scale(1.12);
+}
+
+.progress-remove-btn:active {
+  transform: scale(0.95);
+}
+
+.progress-card-info {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: 2.2rem 0.65rem 0.55rem;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.6) 60%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.progress-card-title {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.progress-card-subtitle {
+  color: #d1d5db;
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.progress-bar-track {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 3.5px;
+  background: rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+  z-index: 4;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--accent-red, #e50914);
+  box-shadow: 0 0 8px rgba(229, 9, 20, 0.7);
+}
+
+/* ==========================================================================
+   Empty States
+   ========================================================================== */
+.rail-empty {
+  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--text-primary) 18%, transparent);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  margin: 0.25rem var(--page-gutter) 1rem;
+  padding: 2rem;
+  text-align: center;
+  font-size: 0.92rem;
+}
+
+/* Aviso acionável de biblioteca: falha ao sincronizar itens legados ou ao adicionar/remover.
+   Fica visível até a pessoa tentar de novo ou dispensar — nunca some sozinho, porque exige uma
+   decisão dela. */
+.library-notice {
+  align-items: center;
+  background: color-mix(in srgb, var(--accent-purple) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-purple) 40%, transparent);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+  margin: 0.75rem var(--page-gutter) 0;
+  padding: 0.85rem 1rem;
+  font-size: 0.92rem;
+}
+
+.library-notice-actions {
+  display: flex;
+  flex: none;
+  gap: 0.5rem;
+}
+
+.library-notice-actions button {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 30%, transparent);
+  border-radius: var(--radius-sm);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 0.35rem 0.85rem;
+}
+
+.library-notice-actions button:hover,
+.library-notice-actions button:focus-visible {
+  border-color: var(--accent-purple);
+}
+
+/* ==========================================================================
+   Skeleton Shimmer Loading States
+   ========================================================================== */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #1c1f26 25%, #2a2e38 50%, #1c1f26 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite ease-in-out;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-hero {
+  min-height: min(46rem, 78vh);
+  padding: 10rem var(--page-gutter) 5.5rem;
+  display: flex;
+  align-items: flex-end;
+  background: #16181d;
+  position: relative;
+}
+
+.skeleton-hero-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 40rem;
+  width: 100%;
+}
+
+.skeleton-badge {
+  width: 6rem;
+  height: 1.4rem;
+}
+
+.skeleton-title {
+  width: 75%;
+  height: 3.5rem;
+  border-radius: var(--radius-md);
+}
+
+.skeleton-text {
+  width: 90%;
+  height: 1.2rem;
+}
+
+.skeleton-text-short {
+  width: 60%;
+  height: 1.2rem;
+}
+
+.skeleton-btn-row {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.skeleton-btn {
+  width: 9rem;
+  height: 3rem;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-rail {
+  padding: 0 var(--page-gutter);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.skeleton-rail-title {
+  width: 14rem;
+  height: 1.6rem;
+}
+
+.skeleton-cards-row {
+  display: flex;
+  gap: 1rem;
+  overflow: hidden;
+}
+
+.skeleton-card-vertical {
+  flex: 0 0 clamp(9.5rem, 13vw, 13.5rem);
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius-md);
+}
+
+.skeleton-card-wide {
+  flex: 0 0 clamp(16rem, 23vw, 21rem);
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md);
+}
+
+/* ==========================================================================
+   Tone Gradients for Fallbacks
+   ========================================================================== */
+.tone-azure  { background: linear-gradient(135deg, #07223d 0%, #157299 100%); }
+.tone-plum   { background: linear-gradient(135deg, #271438 0%, #8548a3 100%); }
+.tone-amber  { background: linear-gradient(135deg, #381d06 0%, #bf6c1b 100%); }
+.tone-forest { background: linear-gradient(135deg, #0a2d21 0%, #2f7a5c 100%); }
+.tone-coral  { background: linear-gradient(135deg, #42161f 0%, #c45244 100%); }
+.tone-violet { background: linear-gradient(135deg, #1b1238 0%, #6b55c9 100%); }
+
+/* ==========================================================================
+   Error & State Panels
+   ========================================================================== */
+.home-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  text-align: center;
+  gap: 1.25rem;
+}
+
+.home-state strong {
+  font-size: 1.3rem;
+  color: #fff;
+}
+
+/* ==========================================================================
+   Responsive Adjustments
+   ========================================================================== */
+@media (max-width: 1280px) {
+  .navbar { gap: 0.8rem; }
+  .navbar nav { gap: 0.8rem; }
+  .navbar nav a { font-size: 0.8rem; }
+}
+
+@media (max-width: 768px) {
+  .personalized-showcase { --personalized-card-width: calc(100vw - 2rem); }
+  .personalized-showcase-card { aspect-ratio: 4 / 3; }
+  .personalized-showcase-content { max-width: 78%; }
+  .personalized-showcase-content h3 { font-size: clamp(1.8rem, 9vw, 3rem); }
+
+  .navbar {
+    height: 4.2rem;
+    gap: 0.8rem;
+  }
+
+  /* A marca dá lugar ao botão de seções, como pedido. O link do topo continua alcançável
+     pelo próprio menu, no item "Início". */
+  .navbar-brand-section .brand {
+    display: none;
+  }
+
+  .navbar-menu-btn {
+    display: flex;
+  }
+
+  /* Fechada, a navegação não ocupa espaço; aberta, desce como painel sob a navbar. Ela deixa
+     de ser `position: absolute` centralizada — essa regra é do desktop e aqui empilharia os
+     links por cima do conteúdo. */
+  .navbar-center {
+    position: fixed;
+    top: 4.2rem;
+    left: 0;
+    right: 0;
+    transform: none;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0;
+    padding: 0.4rem 0 0.6rem;
+    background: rgba(22, 24, 29, 0.97);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45);
+  }
+
+  .navbar-center.is-open {
+    display: flex;
+  }
+
+  .navbar-center a {
+    padding: 0.95rem var(--page-gutter);
+    font-size: 1rem;
+  }
+
+  .navbar-center a.active {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  /* O sublinhado do desktop vira uma barra na lateral: em lista vertical ele atravessaria
+     a linha inteira e pareceria uma divisória. */
+  .navbar-center a.active::after {
+    bottom: auto;
+    top: 0;
+    left: 0;
+    right: auto;
+    width: 3px;
+    height: 100%;
+    border-radius: 0;
+  }
+
+  /* Destaque mobile: a paisagem sai de fundo "cover" cortado e vira só um plano desfocado
+     atrás de um cartão com pôster retrato centralizado, como a referência (Netflix mobile).
+     Toque continua funcionando via swipe — as setas laterais somem logo abaixo. */
+  .hero {
+    min-height: 100svh;
+    padding: 7.5rem var(--page-gutter) 3.5rem;
+    background-image: none;
+    background: var(--bg-canvas);
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image: var(--hero-background-compact, var(--hero-background));
+    background-size: cover;
+    background-position: center;
+    filter: blur(28px) brightness(0.45);
+    transform: scale(1.15);
+  }
+
+  .hero-teaser {
+    display: none;
+  }
+
+  .hero-poster {
+    display: block;
+    margin: 0 auto 0.5rem;
+    aspect-ratio: 2 / 3;
+    width: min(60vw, 15rem);
+    object-fit: cover;
+    border-radius: 0.9rem;
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.55);
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    align-items: center;
+    max-width: 24rem;
+    margin: 0 auto;
+  }
+
+  .hero-side-arrow {
+    display: none;
+  }
+
+  .hero-meta-row {
+    justify-content: center;
+  }
+
+  .hero-actions {
+    justify-content: center;
+  }
+
+  .hero-list-btn {
+    width: auto;
+    height: 2.85rem;
+    padding: 0 1.2rem;
+    border-radius: 999px;
+    gap: 0.5rem;
+  }
+
+  .hero-btn-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .hero-info-btn {
+    display: none;
+  }
+
+  .hero-carousel-controls {
+    display: none;
+  }
+
+  .hero-title {
+    font-size: clamp(2rem, 8vw, 3rem);
+  }
+
+  .rails {
+    margin-top: -1.5rem;
+    gap: 2.4rem;
+  }
+
+  .rail-nav-btn {
+    display: none;
+  }
+}
+
+/* --- Reprodução pelo player nativo -------------------------------------------------------
+   O vídeo é desenhado ATRÁS da WebView, pelo libVLC. Para ele aparecer, tudo que estiver na
+   frente precisa deixar de pintar fundo — inclusive <html> e <body>, que carregam a cor do
+   tema. Medido em 26/08/2026: sem isto o vídeo toca e a tela fica preta, porque
+   `background: var(--bg-canvas)` cobre a superfície nativa.
+
+   A classe é posta e removida pelo próprio player, e só existe dentro do app. */
+html.reproduzindo-nativo,
+html.reproduzindo-nativo body {
+  background: transparent !important;
+}
+
+/* A árvore do Next inteira sai da frente do vídeo. Os controles não são atingidos porque
+   moram num portal preso direto ao body, fora dessa árvore — se estivessem dentro dela,
+   sumiriam junto. */
+html.reproduzindo-nativo body > *:not([data-player-nativo]):not([data-cortina-player]) {
+  display: none;
+}
+
+/* Na TV Samsung o site roda num <iframe> da casca, que é escura. Se o color-scheme do site for
+   outro (tema claro), o Chromium pinta um fundo OPACO atrás do iframe e o vídeo do AVPlay, que
+   fica por trás, some. Enquanto o vídeo nativo toca, o esquema é sempre o da casca. Só vale
+   dentro da casca: nenhum outro aparelho tem a classe `casca-tizen`. */
+html.casca-tizen.reproduzindo-nativo {
+  color-scheme: dark;
+}
+
+.desktop-update {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  max-width: min(32rem, calc(100vw - 2rem));
+  padding: 1rem 1.1rem;
+  color: #fff;
+  background: rgba(17, 20, 18, 0.97);
+  border: 1px solid rgba(109, 174, 94, 0.5);
+  border-radius: 0.8rem;
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.45);
+}
+
+.desktop-update div { display: grid; gap: 0.2rem; }
+.desktop-update span { color: #c9d0ca; font-size: 0.85rem; }
+.desktop-update button {
+  flex: none;
+  padding: 0.65rem 0.9rem;
+  color: #081006;
+  background: #78b769;
+  border: 0;
+  border-radius: 999px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* A TV mantém o mesmo layout. Esta camada muda apenas a ergonomia do controle remoto.
+   Vale para qualquer TV (Samsung Tizen ou projetor/Android TV): o seletor casa a presença do
+   atributo, não um valor específico. */
+html[data-tv-runtime] {
+  font-size: 112.5%;
+  scroll-behavior: smooth;
+}
+
+/* Foco do controle mais suave (pedido do Lucas, 30/09): contorno branco fino + brilho leve, no
+   lugar do contorno de 4 px com anel verde de 8 px por fora, que pesava demais na tela. */
+html[data-tv-runtime] :is(a, button, input, select, [tabindex]):focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.9) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.12) !important;
+}
+
+html[data-tv-runtime] button,
+html[data-tv-runtime] a {
+  min-height: 3.25rem;
+}
+
+/* Modo leve — SÓ no projetor/Android TV (`data-tv-lite`), que renderiza numa WebView fraca.
+   Os efeitos de composição (blur de fundo, filtros, animações e transições) são o que derruba o
+   FPS ali. Cortamos todos, mas preservamos `box-shadow`: o anel de foco do controle acima é feito
+   com box-shadow, e removê-lo cegaria a navegação. Celular e desktop nunca recebem este bloco. */
+html[data-tv-lite] *,
+html[data-tv-lite] *::before,
+html[data-tv-lite] *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+
+/* Projetor: o anel de foco fica só no `outline`. A sombra translúcida de 6 px em volta do item
+   focado obrigava a repintar e misturar a área ao redor a cada seta (cards e controles do player). */
+html[data-tv-lite] :is(a, button, input, select, [tabindex]):focus-visible {
+  box-shadow: none !important;
+}
+
+/* Base do layout de TV (Task 0 do plano de 27/09/2026). Só tokens de medida e a utilidade de
+   foco — nenhum elemento existente é reestilizado aqui. As páginas em modo TV (`useTvLayout()`)
+   é que vão consumir isto ao montar a marcação própria delas, tarefa por tarefa.
+
+   Medidas pensadas para 1920×1080 visto de sofá: margem lateral de 5% da tela, texto nunca
+   abaixo de 24 px, e um foco bem grande (borda + escala) porque não há cursor apontando o item
+   ativo. `data-tv-lite` (projetor) corta toda `transition`/`animation` — a escala do foco muda
+   de tamanho no mesmo quadro, sem depender de animação. */
+html[data-tv-layout] {
+  /* O projetor entrega à WebView uma tela menor que 1920 (ex.: 1280×720 com densidade 1,5), e aí
+     as medidas fixas estouravam: o menu central passava por cima do avatar. O `rem` passa a
+     acompanhar a largura (16 px em 1920, ~10,7 px em 1280), então a tela inteira de TV encolhe
+     na mesma proporção do desenho de 1920 — por isso as fontes abaixo são em `rem`, não `px`. */
+  font-size: clamp(10px, calc(100vw / 120), 16px);
+  --tv-safe-x: 5vw;
+  --tv-font-body: 1.625rem;
+  --tv-font-small: 1.5rem;
+  --tv-font-row-title: 2rem;
+  --tv-focus-border: 2px solid rgba(255, 255, 255, 0.9);
+  --tv-focus-scale: 1.06;
+  --tv-radius: 0.5rem;
+}
+
+/* Utilidade para o item que recebe o foco do controle remoto: borda branca de 4 px sempre
+   visível (via `outline`, que não altera o box model — importante porque os cards de fileira
+   crescem com `transform`, e um `border` de verdade mudaria o tamanho e empurraria os vizinhos)
+   e o leve zoom que a referência de TV usa para destacar o item ativo. */
+html[data-tv-layout] .tv-focusable:focus-visible {
+  outline: var(--tv-focus-border);
+  outline-offset: 2px;
+  border-radius: var(--tv-radius);
+  transform: scale(var(--tv-focus-scale));
+}
+
+/* Menu de TV no topo (Task 1, plano de 27/09/2026). A marcação é a mesma de sempre — mesmos
+   links, estados e handlers de `home-experience.tsx` — só a posição e a forma mudam aqui. A
+   barra sai do `position: fixed` (não precisa flutuar) e cada peça vira uma âncora própria
+   (`position: absolute`) dentro dela, então a ordem no DOM deixa de decidir o lugar na tela.
+   Fundo sólido escuro, sem blur nem transição (regra do projetor: nada de composição pesada). */
+html[data-tv-layout] .navbar {
+  /* Sempre visível (pedido do Lucas): só o conteúdo de baixo rola por trás dela. */
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  /* Camada própria: sem isto, cada rolagem da home repinta a barra junto com as fileiras que
+     passam por baixo dela — na WebView do projetor isso pesava a cada seta. */
+  will-change: transform;
+  transform: translateZ(0);
+  height: auto;
+  min-height: 6.5rem;
+  padding: 0 var(--tv-safe-x);
+  background: #0b0c0f;
+  background-image: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transition: none;
+}
+
+/* O botão de seções do celular não existe na TV: todas as seções já são pílulas sempre visíveis
+   no menu central (abaixo). Forçado mesmo fora do breakpoint de celular, para a prévia no PC
+   (`?tv=1`) não mostrar as duas coisas se a janela estiver estreita. */
+html[data-tv-layout] .navbar-menu-btn {
+  display: none;
+}
+
+/* A marca vai para a ponta direita, só decorativa: "Início" já é uma pílula do menu central, e
+   `home-experience.tsx` a troca por um `<span>` sem `href` na TV (ver comentário lá) para não
+   competir pelo primeiro foco da página. */
+html[data-tv-layout] .navbar-brand-section {
+  position: absolute;
+  left: auto;
+  right: var(--tv-safe-x);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+html[data-tv-layout] .navbar-brand-section .brand {
+  display: inline-flex;
+}
+
+/* Busca e Minha Biblioteca ganham pílula própria no menu central (`home-experience.tsx` as
+   acrescenta só na TV); manter os ícones avulsos aqui duplicaria a mesma ação em dois lugares.
+   `display: contents` tira só a CAIXA deste `<div>` do layout — os filhos continuam os mesmos
+   elementos, com os mesmos links, estados e handlers de sempre, só ganham posição própria. */
+html[data-tv-layout] .navbar-right {
+  display: contents;
+}
+
+html[data-tv-layout] .navbar-right > a.navbar-icon-btn {
+  display: none;
+}
+
+/* O tema continua alcançável, só muda de lugar: fica pertinho da marca, na ponta direita. */
+html[data-tv-layout] .navbar-right .theme-toggle-btn {
+  position: absolute;
+  right: calc(var(--tv-safe-x) + 5.25rem);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Avatar do perfil na ponta esquerda: o MESMO menu de hoje (perfil ativo, "Editar este perfil",
+   "Trocar ou gerenciar perfis", Stremio, instalar, sair...) — só o gatilho muda de forma, igual
+   à referência de TV (círculo puro, sem nome nem seta). */
+html[data-tv-layout] .profile-menu {
+  position: absolute;
+  left: var(--tv-safe-x);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* O painel abre para a direita (mesma regra de sempre), mas agora o gatilho é um círculo colado
+   na borda esquerda da tela — ancorar pela direita (como no desktop) o jogaria pra fora da
+   janela. */
+html[data-tv-layout] .profile-menu-panel {
+  left: 0;
+  right: auto;
+}
+
+html[data-tv-layout] .profile-chip {
+  padding: 0;
+  gap: 0;
+  border: 0;
+  background: transparent;
+}
+
+html[data-tv-layout] .profile-chip-name,
+html[data-tv-layout] .profile-chip-chevron {
+  display: none;
+}
+
+html[data-tv-layout] .profile-avatar-circle {
+  width: 3.5rem;
+  height: 3.5rem;
+  font-size: 1.4rem;
+}
+
+html[data-tv-layout] .profile-chip:focus-visible {
+  outline: var(--tv-focus-border);
+  outline-offset: 4px;
+  border-radius: 50%;
+  transform: scale(var(--tv-focus-scale));
+}
+
+/* Menu central: a mesma `nav` de hoje (Início, Filmes, Séries, Documentários, Anime, Brasil),
+   mais a lupa e "Minha Biblioteca" como pílula — a seção atual fica com fundo branco, como na
+   referência, no lugar do sublinhado do desktop. */
+html[data-tv-layout] .navbar-center {
+  display: flex;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  gap: 0.6rem;
+}
+
+/* Três estados bem diferentes entre si (senão não dá pra saber onde o controle está quando ele
+   passa pela pílula ativa): FOCO = fundo branco + texto escuro (chama mais atenção que qualquer
+   outra coisa); ATIVO sem foco = texto branco em negrito com um sublinhado fino (sem fundo,
+   pra não se confundir com o foco); as demais = cinza claro. */
+html[data-tv-layout] .navbar-center a {
+  position: relative;
+  font-size: var(--tv-font-body);
+  font-weight: 600;
+  padding: 0.9rem 1.75rem;
+  border-radius: 9999px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* O sublinhado do desktop (`::after` de baixo da pílula) não serve aqui — desenhamos um próprio,
+   mais fino e só quando ativa SEM foco (ver `:focus-visible` abaixo, que o esconde de novo). */
+html[data-tv-layout] .navbar-center a.active::after {
+  content: "";
+  position: absolute;
+  left: 1.5rem;
+  right: 1.5rem;
+  bottom: 0.55rem;
+  height: 2px;
+  border-radius: 1px;
+  background: #ffffff;
+}
+
+html[data-tv-layout] .navbar-center a.active {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+html[data-tv-layout] .navbar-center a:focus-visible {
+  background: #ffffff;
+  color: #16181d;
+  outline: var(--tv-focus-border);
+  outline-offset: 2px;
+  transform: scale(var(--tv-focus-scale));
+}
+
+/* Focada (mesmo sendo a ativa) esconde o sublinhado: o fundo branco já diz "é aqui". */
+html[data-tv-layout] .navbar-center a.active:focus-visible::after {
+  content: none;
+}
+
+/* Lupa e "Minha biblioteca": o mesmo link de hoje, em formato de ícone redondo. Precisa ganhar
+   de `.navbar-center a` (acima) em especificidade — sem o `a.tv-search-pill` combinado, aquela
+   regra vencia com o `padding: 0.9rem 1.75rem` dela (pensado pra pílula de TEXTO) e espremia o
+   SVG de 20×20 dentro de uma caixa de 52×52 já sem sobra nenhuma — o ícone sumia (ficava só o
+   círculo vazio, que é o que o Lucas via na tela). */
+html[data-tv-layout] .navbar-center a.tv-search-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  padding: 0;
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.85);
+  background: transparent;
+}
+
+/* Ícone redondo não tem sublinhado de "ativo" (não é texto) — só o fundo branco já basta. */
+html[data-tv-layout] .navbar-center a.tv-search-pill.active::after {
+  content: none;
+}
+
+html[data-tv-layout] .navbar-center a.tv-search-pill.active {
+  background: #ffffff;
+  color: #16181d;
+}
+
+html[data-tv-layout] .navbar-center a.tv-search-pill:focus-visible {
+  background: #ffffff;
+  color: #16181d;
+  outline: var(--tv-focus-border);
+  outline-offset: 2px;
+  border-radius: 50%;
+  transform: scale(var(--tv-focus-scale));
+}
+
+/* ==========================================================================
+   Home de TV (Task 2, plano de 27/09/2026)
+   ==========================================================================
+   Mesma home de sempre (home-experience.tsx não duplica lógica nenhuma) — aqui só o CSS que
+   dá à TV o card focado que cresce, mostra ficha embaixo e mantém o banner utilizável pelo
+   controle. Nada de `backdrop-filter`, `filter`, `animation` ou `transition` daqui pra baixo:
+   o projetor (`data-tv-lite`) já mata tudo isso, então nem vale a pena depender de transição
+   pra suavizar — o estado muda de uma vez, no mesmo quadro. */
+
+/* Uma única variável controla a margem lateral de hero, fileiras, "Recomendado" e Emmy — todos
+   já usam `--page-gutter` para o respiro lateral. Trocando só o valor, os quatro blocos herdam
+   a margem de segurança de TV (5vw) sem precisar reescrever cada seletor deles. */
+html[data-tv-layout] {
+  --page-gutter: var(--tv-safe-x);
+}
+
+html[data-tv-layout] .rail-title {
+  font-size: var(--tv-font-row-title);
+}
+
+/* Sem isto, o `.rail-scroll`/`.top-ten-scroll`/`.personalized-showcase-scroll` (flex row)
+   esticaria TODOS os cards para a altura do card focado (comportamento padrão
+   `align-items: stretch`) — só o focado deve crescer; os vizinhos ficam do tamanho de sempre.
+   `.personalized-showcase-scroll` entrou porque "Recomendado" e Emmy agora usam o mesmo
+   `.editorial-card` das outras fileiras na TV (ver `TvRailCard` em home-experience.tsx). */
+html[data-tv-layout] .rail-scroll,
+html[data-tv-layout] .top-ten-scroll,
+html[data-tv-layout] .personalized-showcase-scroll {
+  align-items: flex-start;
+}
+
+/* Ficha (título + gênero/ano/duração/nota + sinopse) que some por baixo do card. Nasce no DOM
+   sempre — só o CSS decide quando aparece (`:focus-within`), sem recalcular posição a cada
+   troca de foco como fazia o preview de hover antigo (JS + portal). */
+html[data-tv-layout] .tv-card-details {
+  display: none;
+  padding: 0.65rem 0.15rem 0;
+}
+
+/* Linha de destaque da ficha: "Baseado em você ter assistido X" (Recomendado) ou "🏆 Vencedor
+   do Emmy X" — informação que o card grande de hoje já mostrava e que não pode sumir ao virar
+   fileira padrão na TV. */
+html[data-tv-layout] .tv-card-details-eyebrow {
+  margin: 0 0 0.25rem;
+  font-size: var(--tv-font-small);
+  font-weight: 800;
+  color: var(--accent-gold, #e7c46b);
+}
+
+html[data-tv-layout] .tv-card-details-title {
+  margin: 0 0 0.3rem;
+  font-size: var(--tv-font-body);
+  font-weight: 800;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Uma linha só (referência): texto normal — nada de caixa alta —, cinza claro, os fatos já
+   chegam separados por " • " (`TvCardDetails`, home-experience.tsx). Reticências no lugar de
+   quebrar linha quando não couber tudo. */
+html[data-tv-layout] .tv-card-details-facts {
+  margin: 0 0 0.4rem;
+  font-size: var(--tv-font-small);
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+html[data-tv-layout] .tv-card-details-overview {
+  margin: 0;
+  font-size: var(--tv-font-small);
+  line-height: 1.4;
+  color: var(--text-secondary);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+/* Arte horizontal do card focado (referência Netflix TV). Só existe no DOM quando o item tem
+   um backdrop de verdade (`data-tv-has-backdrop` no card, ver home-experience.tsx); sem ele o
+   card focado continua no pôster — não tem o que trocar. */
+html[data-tv-layout] .tv-card-backdrop {
+  display: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* --- Cards de catálogo/editorial (EditorialCatalogCard / EditorialDiscoveryCard) ---
+   Estrutural, em QUALQUER lugar que o card apareça (fileira da home OU grade, ex.: busca): vira
+   uma coluna (mídia + ficha), mas a ficha começa `display:none` (bloco lá embaixo) e só aparece
+   dentro de uma fileira de verdade — aqui isto não muda nada visível na grade (a ficha continua
+   escondida, o tamanho do pôster continua vindo do `flex`/grid de sempre). */
+html[data-tv-layout] .editorial-card {
+  display: flex;
+  flex-direction: column;
+  aspect-ratio: auto;
+}
+
+html[data-tv-layout] .editorial-card-media {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  flex: 0 0 auto;
+}
+
+/* Borda de foco: SEMPRE, em qualquer card, em qualquer lugar (fileira ou grade) — colada na
+   própria arte (não no link invisível que a cobre, que ficaria com cantos retos), com o mesmo
+   raio do pôster; `outline` nunca entra na caixa do layout, então os vizinhos não se deslocam.
+   Cobre também a prévia via `?tv=1` num PC comum (liga `data-tv-layout` sem `data-tv-runtime`,
+   que não tem navegação por controle real ali). Isto é TUDO que a busca (Task 5, ainda não
+   feita) precisa por enquanto: mesmo tamanho de sempre, só com o contorno branco. */
+html[data-tv-layout] .editorial-card:focus-within .editorial-card-media,
+html[data-tv-layout] .top-ten-card:focus-within .top-ten-poster,
+html[data-tv-layout] .progress-card:focus-within .progress-media {
+  outline: var(--tv-focus-border);
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
+}
+
+/* --------------------------------------------------------------------------------------------
+   Tudo daqui pra baixo — o card focado CRESCE numa caixa 16:9 fixa (a mesma largura pras três
+   fileiras: editoriais, catálogos, biblioteca, Top 10, Continuar, Recomendado e Emmy) e mostra
+   a ficha embaixo — só acontece DENTRO de uma fileira da home (`[data-tv-zone]`, marcado em
+   cada `<section>` de fileira, hero e menu). Sem este escopo, a grade de resultados da busca
+   (que reusa `EditorialCatalogCard`) sofria o MESMO tratamento: a imagem virava 16:9 (encolhia)
+   e a ficha aparecia por cima, abrindo um buraco na grade e empurrando o título dela pra baixo.
+   -------------------------------------------------------------------------------------------- */
+
+/* Uma largura só, ~24–32 rem, pra TODOS os tipos de card — antes cada fileira tinha a sua conta
+   (Emmy/Recomendado sem limite nenhum já que o backdrop deles nunca ficava marcado como "não
+   tem", cards sem backdrop virando um retângulo em pé porque só a largura crescia e a proporção
+   ficava 2:3). Junto com `aspect-ratio: 16/9` INCONDICIONAL (não depende mais de
+   `data-tv-has-backdrop`) e o `object-fit: cover` que a imagem já tinha, dá sempre a MESMA caixa
+   — com backdrop de verdade ou só o pôster esticado/cortado (`.tv-card-backdrop` só entra
+   quando existe um real; ver `data-tv-has-backdrop` abaixo). */
+/* Confirmado com Chrome headless (build de produção real, `next build`, CSS minificado igual
+   ao que vai pro aparelho): esta regra, sozinha, JÁ trava o card focado do Recomendado/Emmy em
+   32rem/16:9 — testei a estrutura exata do `TvRailCard` dentro de `.personalized-showcase-scroll`
+   e o resultado bateu (`getComputedStyle` mediu 512px/288px = clamp+16:9, nada de tela cheia).
+   Como não achei nenhuma regra existente vencendo em especificidade, a suspeita é uma prévia
+   testada antes deste commit chegar até ela. Reforço mesmo assim, direto pela classe do
+   contêiner (sem depender do atributo `[data-tv-zone]`), como segunda rede de segurança —
+   redundante por design, não corrige uma causa nova. */
+html[data-tv-layout] [data-tv-zone] .editorial-card:focus-within,
+html[data-tv-layout] [data-tv-zone] .progress-card:focus-within,
+html[data-tv-layout] .personalized-showcase-scroll .editorial-card:focus-within {
+  flex-basis: clamp(24rem, 30vw, 32rem);
+  /* A ficha tem linhas `nowrap` (no Emmy, a lista de categorias vencidas é enorme); sem travar
+     o mínimo/máximo, o `min-width: auto` do flex esticava o card até caber o texto inteiro. */
+  min-width: 0;
+  max-width: clamp(24rem, 30vw, 32rem);
+  z-index: 30;
+}
+
+html[data-tv-layout] [data-tv-zone] .editorial-card:focus-within .editorial-card-media,
+html[data-tv-layout] [data-tv-zone] .progress-card:focus-within .progress-media,
+html[data-tv-layout] .personalized-showcase-scroll .editorial-card:focus-within .editorial-card-media {
+  aspect-ratio: 16 / 9;
+}
+
+html[data-tv-layout] [data-tv-zone] .editorial-card:focus-within .tv-card-details,
+html[data-tv-layout] [data-tv-zone] .top-ten-card:focus-within .tv-card-details,
+html[data-tv-layout] [data-tv-zone] .progress-card:focus-within .tv-card-details,
+html[data-tv-layout] .personalized-showcase-scroll .editorial-card:focus-within .tv-card-details {
+  display: block;
+}
+
+/* A arte horizontal fica SEMPRE no DOM das fileiras, só transparente: com `display: none` o
+   navegador nem baixava a imagem (lazy) até o card ganhar foco, e cada seta mostrava um quadro
+   preto antes dela chegar. Assim ela já vem junto com a fileira visível e só aparece no foco,
+   POR CIMA do pôster — que nunca some, e cobre a caixa enquanto o backdrop ainda carrega. */
+html[data-tv-layout] [data-tv-zone] :is(.editorial-card, .top-ten-card, .progress-card)[data-tv-has-backdrop] .tv-card-backdrop,
+html[data-tv-layout] .personalized-showcase-scroll .editorial-card[data-tv-has-backdrop] .tv-card-backdrop {
+  display: block;
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+html[data-tv-layout] [data-tv-zone] :is(.editorial-card, .top-ten-card, .progress-card)[data-tv-has-backdrop]:focus-within .tv-card-backdrop,
+html[data-tv-layout] .personalized-showcase-scroll .editorial-card[data-tv-has-backdrop]:focus-within .tv-card-backdrop {
+  opacity: 1;
+}
+
+/* Ficha: sem fundo nem borda própria (só a mídia tem borda) e SEMPRE com a largura do card —
+   ela é filha em coluna do `.editorial-card`/`.progress-card` (`align-items: stretch`, o padrão
+   do flex, já resolve isso). O Top 10 é a exceção estrutural (rank + pôster lado a lado): ver
+   grid logo abaixo. */
+
+/* --- Top 10: mesmo comportamento, mantendo o número gigante ---
+   A versão anterior usava `flex-wrap` + `flex-basis: 100%` na ficha: como `.top-ten-card` é
+   `flex: 0 0 auto` (largura pelo conteúdo) dentro da fileira, a % da ficha não tinha contra o
+   que resolver (base circular) — ficava larga/cortada demais. Grid resolve de verdade: duas
+   colunas (rank e pôster, cada uma do tamanho do que está dentro — inclusive quando o pôster
+   cresce no foco) e a ficha ocupa só a coluna do pôster.
+   A margem negativa do rank (pensada pro hover pequeno do desktop, sobrepondo o pôster) também
+   saiu: no tamanho grande da TV ela empurrava o card focado para a esquerda o bastante para
+   ficar cortado pela borda da fileira, e ainda confundia o `scrollIntoView` (que agora rola o
+   `.top-ten-card` inteiro — rank incluso — ao invés do link lá dentro; ver `tv-navigation.tsx`),
+   o que também travava o ←. */
+html[data-tv-layout] .top-ten-card {
+  display: grid;
+  /* `minmax(0, max-content)`, não só `max-content`: uma sinopse comprida na ficha (2ª linha da
+     coluna) tem uma largura "preferida" enorme se ninguém disser o contrário — o `max-content`
+     sozinho deixava a COLUNA (e a ficha dentro dela) esticar pra caber essa largura preferida
+     de uma vez, atravessando a tela mesmo com `-webkit-line-clamp`/`overflow:hidden` (que só
+     cortam depois que a caixa já existe, não encolhem a largura "ideal" que o grid calcula). O
+     `minmax(0, …)` deixa a coluna encolher até 0 antes disso, e quem manda no tamanho de
+     verdade volta a ser o `width` do pôster (explícito, abaixo). */
+  grid-template-columns: max-content minmax(0, max-content);
+  column-gap: 0;
+  align-items: end;
+}
+
+html[data-tv-layout] .top-ten-rank {
+  margin-right: 0;
+  margin-bottom: 0;
+}
+
+html[data-tv-layout] .top-ten-card .tv-card-details {
+  grid-column: 2;
+  align-self: start;
+  /* `width: 0` tira a ficha da conta da largura da coluna (senão a sinopse, medida numa linha
+     só, esticava o card focado pela fileira inteira) e `min-width: 100%` a devolve à largura
+     que o pôster definiu. */
+  width: 0;
+  min-width: 100%;
+}
+
+html[data-tv-layout] .top-ten-poster {
+  position: relative;
+  width: clamp(9rem, 11.5vw, 12.5rem);
+}
+
+/* Mesma largura/proporção fixa de `.editorial-card`/`.progress-card` (comentário lá em cima) —
+   só dentro de uma fileira de verdade (`[data-tv-zone]`); como o grid mede a coluna pelo
+   `width` do pôster, crescer aqui já cresce a coluna (e a ficha, que usa a mesma coluna). O
+   `z-index` vai no CARD (item do `.top-ten-scroll`), não no pôster: é lá que ele compete de
+   empilhamento com os `.top-ten-card` vizinhos na fileira. */
+html[data-tv-layout] [data-tv-zone] .top-ten-card:focus-within {
+  z-index: 30;
+}
+
+html[data-tv-layout] [data-tv-zone] .top-ten-card:focus-within .top-ten-poster {
+  width: clamp(24rem, 30vw, 32rem);
+  aspect-ratio: 16 / 9;
+}
+
+
+/* --- Continuar assistindo: MESMO sistema das outras fileiras (ex.: "Filmes para entrar na
+   conversa") — pôster liso, sem título/tempo por cima da imagem (`.progress-card-info` some na
+   TV; a barra fina embaixo do pôster continua). O `ProgressItem` não tem backdrop próprio, mas
+   na TV o card busca o enriquecimento pelo MESMO mecanismo dos cards editoriais (`useEditorial`,
+   home-experience.tsx — a mesma rota /v1/editorial de sempre, chamada só quando `tvLayout`, não
+   uma API nova) e usa o `backdropUrl` dele quando chega; até lá, ou se não existir, o PRÓPRIO
+   pôster cobre a moldura 16:9 (`object-fit: cover`, já é o padrão desta mídia). A ficha mostra
+   título, progresso/T·E e a barra de progresso de novo (sem botão de remover nesta rodada —
+   decisão do Lucas). --- */
+html[data-tv-layout] .progress-card-info {
+  display: none;
+}
+
+/* `.progress-card` (diferente de `.editorial-card`) tem border/background PRÓPRIOS desde
+   sempre (`border: 1px solid var(--border-card); background: var(--bg-card);`), não só no
+   foco — no desktop isso é sutil ao redor de um pôster pequeno, mas embrulha o card + a ficha
+   inteiros quando ele cresce na TV: é a "caixa com fundo escuro" que o Lucas via. Some só aqui;
+   o contorno branco de foco continua vindo só da mídia (`.progress-media`, acima). */
+html[data-tv-layout] .progress-card {
+  border: none;
+  background: transparent;
+}
+
+/* O card inteiro é o link focado aqui (diferente do editorial-card, que tem um link só na
+   mídia) — então o `:focus-visible`/hover de SEMPRE (desktop) também disparava na TV: um
+   `transform`/`box-shadow`/troca de cor de borda ao redor do CARD INTEIRO (a "caixa com borda
+   verde" que o Lucas viu) por cima do nosso próprio contorno na mídia, e o `scale(1.03)` a
+   partir do centro empurrava o card focado ~3% pra fora dos dois lados — cortando o da ponta
+   esquerda da fileira contra a margem seguro. Neutraliza tudo isso só na TV. */
+html[data-tv-layout] .progress-card:focus-visible {
+  transform: none;
+  box-shadow: none;
+  border-color: transparent;
+}
+
+/* O X (irmão de `.progress-card-info`, não escondido por ela) já tem `tabIndex={-1}` na TV
+   (home-experience.tsx) — isto só tira ele da tela também, já que não sobrou onde clicar nele. */
+html[data-tv-layout] .progress-remove-btn {
+  display: none;
+}
+
+html[data-tv-layout] .tv-card-details-progress {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+  margin: 0.15rem 0 0.7rem;
+}
+
+html[data-tv-layout] .tv-card-details-progress-fill {
+  height: 100%;
+  background: var(--accent-red, #e50914);
+}
+
+/* "Remover de Continuar" e "Adicionar à biblioteca" saíram da ficha nesta rodada (decisão do
+   Lucas) — o toque "+"/"✓"/"X" sobre o pôster (`.editorial-card-touch-save`,
+   `.progress-remove-btn`) continua fora do foco na TV (`tabIndex={-1}`), só sem um botão
+   equivalente na ficha para substituí-lo.
+
+   "Recomendado para você" e vencedores do Emmy viraram fileira no mesmo padrão de
+   "Recém-chegados" na TV (ver `TvRailCard`) — os cards gigantes de sempre não mostravam foco
+   nenhum. O CSS deles (tipografia, `:focus-visible` do link antigo) fica só para PC/celular,
+   que continuam com a vitrine grande de sempre; nada aqui precisa de uma versão de TV. */
+
+/* --- Banner (hero): referência Netflix TV 2025 — vira um CARTÃO com cantos arredondados,
+   margem lateral de segurança e um respiro abaixo do menu (que agora fica com `position:
+   relative`, então o cartão só entra depois dele no fluxo normal — não sobrepõe). A imagem de
+   fundo já é `background-size: cover` (base, PC/celular) e o gradiente escuro à esquerda já
+   existe (`.hero-vignette`) — `overflow: hidden` aqui é só o que falta pra os dois obedecerem
+   aos cantos redondos do cartão.
+   Só dois botões ("Assistir" e "Mais informações"; "Minha Lista" some da TV — decisão do Lucas)
+   viram o carrossel: sem os pontos indicadores, ← no botão da esquerda e → no da direita (que
+   não têm mais pra onde ir dentro do banner) trocam de destaque (`data-tv-edge-prev/-next` +
+   `tv-navigation.tsx` + o efeito que escuta `cebola:tv-hero-step` em home-experience.tsx); o
+   foco continua no mesmo botão porque a posição dele no DOM não muda. O trailer do YouTube não
+   entra na TV (os controles dele ficavam por cima do banner e travavam o foco — ver
+   `playSpotlightTeaser` em home-experience.tsx) e as setas das pontas somem (escondidas + fora
+   do tabIndex). --- */
+html[data-tv-layout] .hero {
+  /* Arte em 1280 px (`--hero-background-compact`): a `original` chega a 4K e cada troca do
+     destaque decodificava uma imagem dessas, travando a Samsung. */
+  background-image: var(--hero-background-compact, var(--hero-background));
+  margin: 1.75rem var(--tv-safe-x) 0;
+  min-height: 70vh;
+  border-radius: 1rem;
+  overflow: hidden;
+  padding: 2.5rem 3rem;
+}
+
+/* Cartão mais alto, texto menor: os tokens de TV (--tv-font-small: 24px, --tv-font-body: 26px)
+   foram pensados pro banner de ponta a ponta de antes; agora que ele é um cartão com mais
+   respiro, o pedido do Lucas foi encolher especificamente estes textos (o resto da home
+   continua nos tokens padrão). */
+html[data-tv-layout] .hero-logo-img {
+  max-height: 22vh;
+}
+
+html[data-tv-layout] .hero-title {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+}
+
+html[data-tv-layout] .hero-actions {
+  gap: 1rem;
+  flex-wrap: nowrap;
+}
+
+/* Estado padrão dos dois botões na TV: translúcido — inclusive "Assistir", que antes ficava
+   sempre branco e não dava pra saber onde estava o foco. O branco fica reservado pra dizer
+   "é aqui que o controle está" (ver `:focus-visible` abaixo). */
+html[data-tv-layout] .hero-watch-btn,
+html[data-tv-layout] .hero-circle-btn {
+  height: auto;
+  min-height: 3.75rem;
+  padding: 1rem 2rem;
+  font-size: var(--tv-font-body);
+  border-radius: 0.6rem;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  white-space: nowrap;
+}
+
+html[data-tv-layout] .hero-circle-btn {
+  width: auto;
+  gap: 0.6rem;
+}
+
+html[data-tv-layout] .hero-btn-label {
+  display: inline;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Foco = fundo branco e texto preto (referência Netflix), igual pros dois botões. Os ícones
+   usam `currentColor` (o SVG de "Assistir" é `fill`, o de "Mais informações" é `stroke`), então
+   recolorir o texto já recolore o ícone junto — sem precisar de uma regra por SVG. */
+html[data-tv-layout] .hero-watch-btn:focus-visible,
+html[data-tv-layout] .hero-circle-btn:focus-visible {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+  outline: var(--tv-focus-border);
+  outline-offset: 3px;
+}
+
+/* Ficavam por cima do texto e, de quebra, confundiam o LRUD (mais perto da mão do que os
+   próprios botões de ação). Sem os pontos indicadores (saíram do banner), os dois botões das
+   pontas já cobrem "anterior/próximo" (comentário no topo do bloco). */
+html[data-tv-layout] .hero-side-arrow {
+  display: none;
+}
+
+/* ~24px, no máximo 3 linhas (`-webkit-line-clamp: 3` já vem do PC, base do arquivo). */
+html[data-tv-layout] .hero-description {
+  font-size: 24px;
+  max-width: 46ch;
+}
+
+/* ~22px — metadados ("a • b • c") e "Dirigido por…"/"Criado por…". */
+html[data-tv-layout] .hero-credits,
+html[data-tv-layout] .hero-meta-text {
+  font-size: 22px;
+}
+
+/* --- Fluidez da navegação na TV (03/10/2026) ---
+   Antes tudo mudava num quadro só (a fileira saltava e o card focado trocava de tamanho seco).
+   A rolagem agora é animada em JS (`tv/tv-smooth-scroll.ts`) e o foco ganha movimento só com
+   `transform`/`opacity`, que a GPU anima sem refazer o layout. O projetor (`data-tv-lite`) corta
+   toda `animation`/`transition`, então lá nada disto roda. A arte horizontal aparece por
+   transição de opacidade (regra junto do `.tv-card-backdrop`, acima). */
+
+/* O encaixe nativo (`scroll-snap`) brigaria com a rolagem quadro a quadro, puxando a fileira
+   pro card mais próximo no meio do movimento; na TV quem decide onde parar é a navegação.
+   `will-change`: a Samsung pinta na CPU (raster por software) e, em tela de densidade 1, o
+   Chromium não dá camada própria a uma área rolável — cada passo da rolagem repintava a fileira
+   inteira. Com camada própria ela só desliza o que já está pintado (medido na TV: metade do
+   trabalho por tecla). */
+html[data-tv-runtime] :is(.rail-scroll, .top-ten-scroll, .personalized-showcase-scroll) {
+  scroll-snap-type: none;
+  will-change: scroll-position;
+}
+
+/* Samsung: só blur e filtros saem (pesam na GPU a cada quadro de rolagem, e o projetor já vive
+   sem eles); transições e animações ficam. */
+html[data-tv-runtime="tizen"] *,
+html[data-tv-runtime="tizen"] *::before,
+html[data-tv-runtime="tizen"] *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+}
+
+/* Transições que a TV não consegue fazer na GPU (cor, sombra, borda, fundo): cada quadro delas
+   repintava a página na CPU — medido na Samsung, o banner e o menu respondiam por boa parte do
+   engasgo ao subir/descer. Saem só na Samsung; o movimento dos cards (abaixo) fica. */
+html[data-tv-runtime="tizen"] .hero,
+html[data-tv-runtime="tizen"] :is(.hero, header.navbar) :is(*, *::before, *::after),
+html[data-tv-runtime="tizen"] .progress-card {
+  transition: none !important;
+}
+
+@keyframes tv-focus-grow {
+  from { transform: scale(0.94); }
+  to { transform: none; }
+}
+
+@keyframes tv-focus-rise {
+  from { opacity: 0; transform: translateY(0.5rem); }
+  to { opacity: 1; transform: none; }
+}
+
+/* O card focado cresce a partir da borda esquerda (é ela que fica alinhada no início da fileira). */
+html[data-tv-layout] [data-tv-zone] .editorial-card:focus-within .editorial-card-media,
+html[data-tv-layout] [data-tv-zone] .progress-card:focus-within .progress-media,
+html[data-tv-layout] [data-tv-zone] .top-ten-card:focus-within .top-ten-poster,
+html[data-tv-layout] .personalized-showcase-scroll .editorial-card:focus-within .editorial-card-media {
+  transform-origin: left center;
+  animation: tv-focus-grow 0.32s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+html[data-tv-layout] [data-tv-zone] :is(.editorial-card, .top-ten-card, .progress-card):focus-within .tv-card-details,
+html[data-tv-layout] .personalized-showcase-scroll .editorial-card:focus-within .tv-card-details {
+  animation: tv-focus-rise 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* Fontes embutidas da legenda NA TV (a TV Samsung só tem uma fonte de sistema, então sans/serif/mono
+   saem idênticas). Só são baixadas quando usadas; ver app/player/tv-subtitle-style.ts. */
+@font-face { font-family: "Cebola Legenda Inter"; src: url("/fonts/subtitles/inter.woff2") format("woff2"); font-weight: 400 800; font-display: swap; }
+@font-face { font-family: "Cebola Legenda Arimo"; src: url("/fonts/subtitles/arimo.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
+@font-face { font-family: "Cebola Legenda Roboto"; src: url("/fonts/subtitles/roboto.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
+@font-face { font-family: "Cebola Legenda Noto Serif"; src: url("/fonts/subtitles/noto-serif.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
+@font-face { font-family: "Cebola Legenda Roboto Mono"; src: url("/fonts/subtitles/roboto-mono.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
+@font-face { font-family: "Cebola Legenda Comic Neue"; src: url("/fonts/subtitles/comic-neue.woff2") format("woff2"); font-weight: 700; font-display: swap; }

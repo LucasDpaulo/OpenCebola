@@ -1,0 +1,5 @@
+Fontes de legenda da TV (subconjunto latino), origem Google Fonts.
+- Arimo (arimo.woff2) e Roboto Mono (roboto-mono.woff2): Apache License 2.0.
+- Roboto (roboto.woff2), Noto Serif (noto-serif.woff2) e Comic Neue (comic-neue.woff2): SIL Open Font License 1.1.
+
+Inter: SIL OFL 1.1 (Google Fonts).

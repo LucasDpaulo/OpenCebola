@@ -1,0 +1,5 @@
+.page { background: #090b09; color: #e9ece9; line-height: 1.65; min-height: 100vh; padding: clamp(1.5rem, 6vw, 5rem); box-sizing: border-box; }
+.page h1 { font-size: clamp(2rem, 6vw, 4rem); letter-spacing: -.04em; }
+.page h2 { margin-top: 2rem; }
+.page a { color: #9fd19a; }
+.page p, .page li { max-width: 52rem; }

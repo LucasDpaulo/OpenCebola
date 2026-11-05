@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets"
+  xmlns:tizen="http://tizen.org/ns/widgets"
+  id="br.cebola.tv"
+  version="0.3.0"
+  viewmodes="maximized">
+  <!-- Identidade ainda depende do certificado Samsung definitivo antes de distribuição. -->
+  <!-- required_version = versão mínima da plataforma Tizen. A TV de teste (QN55QEF1A, 2025) é
+       Tizen 9.0; 10.0 fazia a TV recusar o pacote ("Load archive info fail"). -->
+  <tizen:application id="CEBOLA0001.CebolaTV" package="CEBOLA0001" required_version="9.0" />
+  <feature name="http://tizen.org/feature/web.service" />
+  <tizen:privilege name="http://tizen.org/privilege/application.launch" />
+  <tizen:privilege name="http://developer.samsung.com/privilege/network.public" />
+  <tizen:service id="CEBOLA0001.Streaming" type="ui" auto-restart="false" on-boot="false">
+    <tizen:content src="services/streaming-service.js" />
+    <tizen:name>Cebola Streaming</tizen:name>
+    <tizen:description>Motor local de torrent do Cebola</tizen:description>
+    <tizen:category name="http://tizen.org/category/service" />
+  </tizen:service>
+  <content src="www/index.html" />
+  <icon src="www/icon.png" />
+  <name>Cebola TV</name>
+  <description>Aplicativo Cebola para TVs Samsung (Tizen 9+).</description>
+  <tizen:privilege name="http://tizen.org/privilege/internet" />
+  <!-- Sem este privilégio a TV não entrega play/pausa/avançar/voltar do controle ao app
+       (`registerKeyBatch` falha com "Permission denied"); as teclas são registradas na casca. -->
+  <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice" />
+  <!-- A política de acesso do Tizen bloqueia toda origem não listada (ERR_UNKNOWN_URL_SCHEME):
+       capas (TMDB, metahub), trailers (YouTube), addons e fontes de vídeo vêm de domínios
+       variados, então a interface precisa de acesso aberto, igual ao navegador. -->
+  <access origin="*" subdomains="true" />
+  <tizen:profile name="tv" />
+</widget>

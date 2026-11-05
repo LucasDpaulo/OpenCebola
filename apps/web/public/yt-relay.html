@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trailer</title>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}iframe{border:0;width:100%;height:100%;display:block}</style>
+</head>
+<body>
+<script>
+// Ponte para o app do PC: a WebView do Tauri (tauri://localhost) não manda `Referer` http(s) e o
+// YouTube recusa o embed (erro 153). Esta página, servida do domínio do Cebola, embute o player
+// com a identidade certa e só repassa as mensagens da API do iframe entre o app e o YouTube.
+(function () {
+  var YT_ORIGIN = "https://www.youtube-nocookie.com";
+  var params = new URLSearchParams(location.search);
+  var id = params.get("v") || "";
+  if (!/^[A-Za-z0-9_-]{6,20}$/.test(id)) return;
+  params.delete("v");
+  params.set("origin", location.origin);
+  params.set("widget_referrer", location.origin);
+  var frame = document.createElement("iframe");
+  frame.src = YT_ORIGIN + "/embed/" + id + "?" + params.toString();
+  frame.allow = "autoplay; encrypted-media";
+  frame.referrerPolicy = "strict-origin-when-cross-origin";
+  frame.title = "Trailer";
+  document.body.appendChild(frame);
+  window.addEventListener("message", function (event) {
+    if (event.source === window.parent && typeof event.data === "string") {
+      if (frame.contentWindow) frame.contentWindow.postMessage(event.data, YT_ORIGIN);
+    } else if (event.source === frame.contentWindow && event.origin === YT_ORIGIN) {
+      window.parent.postMessage(event.data, "*");
+    }
+  });
+})();
+</script>
+</body>
+</html>

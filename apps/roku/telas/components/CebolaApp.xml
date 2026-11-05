@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="CebolaApp" extends="Group" initialFocus="">
+  <interface>
+    <!-- Liga quando a primeira tela foi desenhada; a casca usa isso para marcar a versão como saudável. -->
+    <field id="pronto" type="boolean" value="false" />
+    <!-- Versão da casca instalada (roAppInfo.GetVersion), preenchida pela casca antes de anexar o nó. -->
+    <field id="cascaVersion" type="string" value="" onChange="verificarCasca" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/CebolaApp.brs" />
+  <children>
+    <Rectangle id="fundo" width="1920" height="1080" color="0x080b08ff" />
+    <Label id="marca" translation="[120,70]" width="1680" height="50" text="CEBOLA TV" color="0x91c48aff" />
+    <Label id="titulo" translation="[120,170]" width="1680" height="90" text="Quem está assistindo?" color="0xffffffff" />
+    <Label id="mensagem" translation="[120,290]" width="1680" height="60" text="Carregando perfis…" color="0xc9d0caff" />
+    <Group id="pareamento" visible="false">
+      <Label id="pTitulo" translation="[120,170]" width="1680" height="100" text="Conectar esta Roku" color="0xffffffff" />
+      <Label id="pInstrucoes" translation="[120,300]" width="1680" height="100" wrap="true" text="Abra Configurações → Aparelhos na sua instalação OpenCebola e digite o código:" color="0xc9d0caff" />
+      <Label id="pCodigo" translation="[120,450]" width="1680" height="180" text="------" color="0xffffffff" />
+      <Label id="pStatus" translation="[120,660]" width="1680" height="80" text="Preparando pareamento…" color="0xc9d0caff" />
+      <Button id="pRetry" translation="[120,790]" minWidth="400" text="Gerar outro código" visible="false" />
+    </Group>
+    <Group id="perfis" translation="[0,0]" />
+    <Label id="ola" translation="[120,420]" width="1680" height="120" text="" color="0xffffffff" visible="false" />
+    <Label id="olaInfo" translation="[120,560]" width="1680" height="60" text="O Início chega na próxima etapa." color="0xc9d0caff" visible="false" />
+    <Label id="desatualizada" translation="[120,300]" width="1680" height="200" wrap="true" text="Esta versão do app Cebola na Roku está desatualizada. Atualize pela página Configurações → TV → Roku no celular." color="0xffffffff" visible="false" />
+    <ApiTask id="api" />
+    <PairingTask id="pairingTask" />
+    <!-- Nova tentativa automática a cada 30 s se o pareamento falhar (ninguém por perto). -->
+    <Timer id="autoRetry" duration="30" repeat="false" />
+  </children>
+</component>

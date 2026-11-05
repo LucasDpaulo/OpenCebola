@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="MainScene" extends="Scene">
+  <script type="text/brightscript" uri="pkg:/components/MainScene.brs" />
+  <children>
+    <Rectangle id="fundo" width="1920" height="1080" color="0x080b08ff" />
+    <Group id="carregador">
+      <Label id="brand" translation="[120,90]" width="1680" height="60" text="CEBOLA TV" color="0x91c48aff" />
+      <Label id="status" translation="[120,400]" width="1680" height="120" wrap="true" text="Carregando o Cebola…" color="0xc9d0caff" />
+      <Button id="telasRetry" translation="[120,560]" minWidth="400" text="Tentar de novo" visible="false" />
+    </Group>
+    <!-- O ComponentLibrary é criado em MainScene.brs, um novo a cada tentativa. -->
+    <!-- Nova tentativa automática a cada 30 s depois de falha (ninguém por perto). -->
+    <Timer id="autoRetry" duration="30" repeat="false" />
+    <!-- 20 s com o app de pé depois de "pronto" = tentativa saudável. -->
+    <Timer id="saudavel" duration="20" repeat="false" />
+    <!-- Download que não termina em 60 s conta como falha, para nunca ficar parado em "Carregando". -->
+    <Timer id="limite" duration="60" repeat="false" />
+  </children>
+</component>

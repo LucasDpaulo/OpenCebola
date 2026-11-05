@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="PairingTask" extends="Task">
+  <interface>
+    <field id="pairingCode" type="string" value="" alwaysNotify="true" />
+    <field id="result" type="string" value="" alwaysNotify="true" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/PairingTask.brs" />
+  <script type="text/brightscript" uri="pkg:/components/InstanceConfig.brs" />
+</component>

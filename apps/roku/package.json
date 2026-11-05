@@ -1,0 +1,12 @@
+{
+  "name": "@cebola/roku",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Aplicativo Cebola para Roku 2025 em SceneGraph/BrightScript.",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "verify": "bash ../../scripts/roku-verificar-pacote.sh",
+    "package": "bash ../../scripts/roku-empacotar.sh",
+    "package:telas": "bash ../../scripts/roku-empacotar-telas.sh"
+  }
+}

@@ -1,0 +1,2663 @@
+.page {
+  /* Segue o tema. A área do herói continua escura porque a arte do filme e as camadas
+     de escurecimento cobrem a primeira tela inteira. */
+  background-color: var(--bg-canvas);
+  min-height: 100vh;
+  padding: 0 clamp(1.25rem, 4vw, 4rem) 5rem;
+  position: relative;
+}
+
+/* Camada com altura de UMA tela. O fundo antes vivia no .page inteiro: ao adicionar elenco e
+   recomendações, `cover` tentava cobrir toda a página e ampliava/cortava a arte violentamente. */
+.heroBackdrop {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 100vh;
+  inset: 0 0 auto;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+  z-index: 0;
+}
+
+/* Mesma caixa do .heroBackdrop e logo depois dele no DOM: o trailer entra por cima da arte
+   parada, e o ::after repete os mesmos degradês para o texto continuar legível sobre o vídeo. */
+.heroTeaser {
+  container-type: size;
+  height: 100vh;
+  inset: 0 0 auto;
+  overflow: hidden;
+  /* A camada cobre uma tela inteira. Sem isto ela engoliria os cliques do cabeçalho e dos
+     botões que ficam por cima do herói — o mesmo motivo pelo qual .heroBackdrop já o faz. */
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+  z-index: 0;
+}
+
+.heroTeaser::after {
+  background:
+    linear-gradient(90deg, rgba(22, 24, 29, 0.42) 0%, rgba(22, 24, 29, 0.12) 72%, rgba(22, 24, 29, 0.32) 100%),
+    linear-gradient(0deg, #16181d 0%, rgba(22, 24, 29, 0.9) 20%, rgba(22, 24, 29, 0.18) 70%);
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.heroTeaser :global(.teaser-controls) {
+  bottom: clamp(1.5rem, 4vw, 3.5rem);
+  right: clamp(1.5rem, 4vw, 3.5rem);
+  z-index: 10;
+  pointer-events: auto;
+}
+
+
+
+/* ==========================================================================
+   MUBI Hero Section (100vh Full Screen - Centralizado)
+   ========================================================================== */
+.mubiHeroSection {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100vh;
+  max-width: 76rem;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 0 2.5rem;
+  position: relative;
+  z-index: 5;
+  box-sizing: border-box;
+  transition: opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  cursor: default;
+}
+
+.mubiHeroSectionHidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mubiHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2.25rem 0 1rem;
+  width: 100%;
+}
+
+.mubiHeaderLeft {
+  display: flex;
+  align-items: center;
+}
+
+.mubiBackBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: rgba(22, 24, 29, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  text-decoration: none;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+
+.mubiBackBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.08);
+}
+
+.mubiHeaderRight {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.mubiRatingBadge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+}
+
+.mubiRatingScore {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  color: #ffffff;
+  font-size: 1.65rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.mubiStar {
+  color: #ffffff;
+  font-size: 1.35rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
+}
+
+.mubiRatingMax {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.mubiRatingVotes {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+/* Bottom Area: Title on top, 3-Column Info Row below (Aligned at same top baseline) */
+.mubiHeroBottom {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: auto;
+}
+
+.mubiTitleArea {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-width: min(34rem, 100%);
+}
+
+.mubiEyebrow {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.mubiTitle {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 950;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  margin: 0;
+  color: #ffffff;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.9);
+}
+
+.mubiTitleLogoWrapper {
+  display: flex;
+  align-items: flex-start;
+  margin: 0.15rem 0 0.35rem;
+}
+
+.mubiTitleLogo {
+  display: block;
+  max-width: min(24rem, 80vw);
+  max-height: clamp(3.8rem, 10vw, 6.5rem);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: left bottom;
+  filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.95)) drop-shadow(0 1px 4px rgba(0, 0, 0, 0.95));
+  user-select: none;
+}
+
+.mubiOriginalTitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0;
+}
+
+/* Pôster retrato e Play em destaque: layout mobile, estilo Netflix (herói de tela cheia vira
+   fundo desfocado atrás de um cartão com pôster centralizado). No desktop/TV o herói de tela
+   cheia segue como está, então os dois ficam ocultos aqui — a regra mobile completa mora na
+   media query. */
+.mubiPoster {
+  display: none;
+}
+
+.mubiPlayBtn {
+  display: none;
+}
+
+.mubiMobilePrimaryActions {
+  display: contents;
+}
+
+.mubiMobileLibraryBtn {
+  display: none;
+}
+
+/* 3-Column Info Grid (Column 1, 2 and 3 aligned at top) */
+.mubiBottomGrid {
+  display: grid;
+  grid-template-columns: minmax(17rem, 1.35fr) minmax(15rem, 1.1fr) minmax(15rem, 1.1fr);
+  gap: clamp(1.5rem, 2.8vw, 3rem);
+  align-items: start;
+  width: 100%;
+}
+
+.mubiColMain {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.mubiCreditsText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  font-size: 0.88rem;
+  color: #f3f4f6;
+  margin: 0.15rem 0;
+}
+
+.mubiDirector {
+  margin: 0;
+  color: #f3f4f6;
+}
+
+.mubiDirector strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.mubiOriginYear {
+  margin: 0;
+  color: #e5e7eb;
+}
+
+.mubiGenres {
+  margin: 0;
+  color: #e5e7eb;
+  font-size: 0.82rem;
+}
+
+.mubiTechBadges {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.15rem 0;
+}
+
+.mubiBadge {
+  display: inline-block;
+  padding: 0.12rem 0.45rem;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  color: #f3f4f6;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.mubiBadgeRating {
+  display: inline-block;
+  padding: 0.12rem 0.45rem;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.mubiAudioSubs {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  font-size: 0.82rem;
+  color: #e5e7eb;
+  font-weight: 600;
+  margin: 0.2rem 0 0.4rem;
+}
+
+.mubiMetaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.mubiActionButtons {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.35rem;
+}
+
+.mubiCircleBtn {
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 50%;
+  background: rgba(22, 24, 29, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: none;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.mubiCircleBtn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.8);
+  transform: scale(1.1);
+  color: #ffffff;
+}
+
+.mubiCircleBtnActive {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+.mubiCircleBtnRated {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+/* Rótulo dos botões circulares: só aparece no layout mobile, sob o ícone. No desktop os
+   botões permanecem só com o ícone (o hover/title já explica a ação). */
+.mubiBtnLabel {
+  display: none;
+}
+
+/* Col 2: Sinopse */
+.mubiColSynopsis {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.mubiColHeading {
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: #ffffff;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.mubiSynopsisText {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: #f3f4f6;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95);
+}
+
+/* Col 3: Opinião / Curadoria / Avaliações dos Usuários */
+.mubiColOpinion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.mubiReviewCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+}
+
+.mubiReviewMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.mubiReviewAuthor {
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.mubiReviewStars {
+  color: #facc15;
+  font-size: 0.86rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.mubiReviewScore {
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.mubiReviewComment {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: #f3f4f6;
+  margin: 0;
+  font-style: italic;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mubiReviewCommentMuted {
+  font-size: 0.82rem;
+  color: #e5e7eb;
+  margin: 0;
+}
+
+.mubiReviewCountNote {
+  font-size: 0.74rem;
+  color: #d1d5db;
+  font-weight: 600;
+  margin-top: 0.15rem;
+}
+
+.mubiOpinionText {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: #f3f4f6;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95);
+}
+
+.mubiOpinionText strong {
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   Modal de Avaliação do Usuário (Clean White Card - Estilo MUBI)
+   ========================================================================== */
+.reviewModalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.reviewModal {
+  background: #ffffff;
+  color: #111827;
+  border-radius: 12px;
+  max-width: 520px;
+  width: 100%;
+  padding: 2rem 2.2rem 1.75rem;
+  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.8);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-sizing: border-box;
+  animation: reviewModalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes reviewModalPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.94) translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.reviewModalClose {
+  position: absolute;
+  top: 1rem;
+  right: 1.25rem;
+  background: transparent;
+  border: none;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color 0.2s ease, transform 0.15s ease;
+}
+
+.reviewModalClose:hover {
+  color: #111827;
+  transform: scale(1.1);
+}
+
+.reviewModalHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.25rem;
+}
+
+.reviewModalTitle {
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #111827;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.reviewModalSubtitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4b5563;
+  margin: 0;
+}
+
+.reviewRatingSection {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid #f3f4f6;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.reviewRatingLabel {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.reviewStarsPicker {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.reviewStarBtn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease;
+}
+
+.reviewStarBtn:hover {
+  transform: scale(1.18);
+}
+
+.reviewScoreIndicator {
+  font-size: 0.95rem;
+  color: #4b5563;
+  margin-left: auto;
+  font-weight: 600;
+}
+
+.reviewScoreIndicator strong {
+  color: #111827;
+  font-size: 1.1rem;
+}
+
+.reviewTextSection {
+  width: 100%;
+}
+
+.reviewTextarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.85rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #111827;
+  background: #ffffff;
+  resize: vertical;
+  min-height: 130px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.reviewTextarea:focus {
+  border-color: #6875b2;
+  box-shadow: 0 0 0 3px rgba(104, 117, 178, 0.15);
+}
+
+.reviewModalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.reviewCharCount {
+  font-size: 0.84rem;
+  color: #9ca3af;
+}
+
+.reviewSaveBtn {
+  background: #6875b2;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.88rem;
+  letter-spacing: 0.04em;
+  padding: 0.65rem 1.6rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.reviewSaveBtn:hover:not(:disabled) {
+  background: #5664a3;
+  transform: scale(1.02);
+}
+
+.reviewSaveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Bottom Bar Chevron */
+.mubiBottomBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding-top: 0.5rem;
+}
+
+.mubiScrollDown {
+  color: rgba(255, 255, 255, 0.65);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: color 0.2s ease, transform 0.2s ease;
+  animation: mubiBounce 2s infinite;
+}
+
+.mubiScrollDown:hover {
+  color: #ffffff;
+  transform: scale(1.15);
+}
+
+@keyframes mubiBounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(5px);
+  }
+  60% {
+    transform: translateY(3px);
+  }
+}
+
+@media (max-width: 960px) {
+  .mubiBottomGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .mubiNav {
+    display: none;
+  }
+  .mubiColSynopsis,
+  .mubiColOpinion {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 1rem;
+  }
+}
+
+.lowerContent {
+  max-width: 76rem;
+  width: 100%;
+  margin: 0 auto;
+  padding-top: 2rem;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   Details Presentation Section
+   ========================================================================== */
+.details {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 0 3rem;
+  position: relative;
+  z-index: 5;
+}
+
+.tagline {
+  color: #e4e4e4;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.editorialSections {
+  background: var(--bg-canvas);
+  /* A sombra que fundia esta faixa com o herói era preta fixa: no tema claro virava uma
+     mancha escura entre a arte e a página. O corte reto é o que a referência faz. */
+  display: grid;
+  gap: 3.5rem;
+  margin: 0 auto;
+  max-width: 76rem;
+  padding: 2.5rem 0 6rem;
+  position: relative;
+  z-index: 5;
+}
+
+/* Fundo de ponta a ponta. A arte do herói tem altura fixa de uma tela e, quando o herói é mais
+   curto que isso (todo filme é), ela continuava pintando ATRÁS desta faixa — e como a faixa é
+   estreita, sobrava uma tarja escura de cada lado dela. O pseudo-elemento estica o fundo até a
+   borda da janela sem precisar de mais um elemento no HTML. */
+.editorialSections::before {
+  background: var(--bg-canvas);
+  bottom: 0;
+  content: "";
+  left: calc(50% - 50vw);
+  position: absolute;
+  top: 0;
+  width: 100vw;
+  z-index: -1;
+}
+
+/*
+ * Item de grid não encolhe abaixo do próprio conteúdo: `min-width` vale `auto` por padrão.
+ * Com uma trilha horizontal dentro (elenco, recomendações), o item passava a ter a largura de
+ * TODOS os cards somados e vazava para fora dos 82rem da coluna — a página parecia cortada à
+ * direita e fora de centro, quando na verdade era a trilha que não estava rolando dentro dela.
+ */
+.editorialSections > * {
+  min-width: 0;
+}
+
+/* Cabeçalho de seção: rótulo à esquerda, contagem à direita, fio embaixo. */
+.sectionHead {
+  align-items: baseline;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1.15rem;
+  padding-bottom: 0.65rem;
+}
+
+.sectionHead .sectionKicker {
+  margin: 0;
+}
+
+.sectionCount {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.sectionKicker {
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  margin: 0 0 1.1rem;
+}
+
+.factPanel,
+.providerSection {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.9rem;
+  padding: clamp(1.2rem, 3vw, 2rem);
+}
+
+.factGrid {
+  display: grid;
+  gap: 1.35rem 2rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.factGrid > div {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.factGrid span {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.personBody span {
+  color: var(--text-muted);
+  font-size: 0.64rem;
+  letter-spacing: 0.06em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.factGrid strong {
+  color: var(--text-primary);
+  font-size: 0.94rem;
+}
+
+.peopleRail,
+.recommendationRail {
+  display: grid;
+  gap: 0.7rem;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(8.5rem, 10rem);
+  /* `min-width: 0` de novo aqui, e não só no pai: a trilha também é um item de grid. */
+  min-width: 0;
+  overflow-x: auto;
+  padding: 0.15rem 0 0.7rem;
+  scrollbar-width: thin;
+}
+
+/* Ficha de pessoa, no formato da referência: retrato em cima, nome e função dentro do cartão. */
+.personCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.4rem;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+}
+
+.personCard img,
+.personFallback {
+  aspect-ratio: 4 / 5;
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  object-fit: cover;
+  width: 100%;
+}
+
+.personFallback {
+  align-items: center;
+  color: var(--text-muted);
+  display: flex;
+  font-size: 2rem;
+  justify-content: center;
+}
+
+.personBody {
+  display: grid;
+  gap: 0.18rem;
+  padding: 0.6rem 0.65rem 0.7rem;
+}
+
+/* Nome e função ficam em duas linhas no máximo: sem isto, "Isaac Hempstead Wright" empurrava a
+   função para fora do cartão, e a altura da trilha inteira passava a depender do nome mais longo. */
+.personCard strong,
+.personBody span {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.personCard strong {
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.providerSection {
+  display: grid;
+  gap: 1rem;
+}
+
+.providerSection .sectionKicker { margin-bottom: 0.25rem; }
+
+.providerRow {
+  align-items: start;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 7rem 1fr;
+}
+
+.providerRow > strong {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  padding-top: 0.45rem;
+}
+
+.providerRow > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.provider {
+  align-items: center;
+  background: color-mix(in srgb, var(--text-primary) 7%, transparent);
+  border-radius: 999px;
+  color: var(--text-primary);
+  display: inline-flex;
+  font-size: 0.76rem;
+  font-weight: 700;
+  gap: 0.45rem;
+  padding: 0.35rem 0.65rem 0.35rem 0.35rem;
+}
+
+.provider img {
+  border-radius: 50%;
+  height: 1.65rem;
+  object-fit: cover;
+  width: 1.65rem;
+}
+
+.providerCredit,
+.tmdbCredit {
+  color: var(--text-muted);
+  font-size: 0.69rem;
+  line-height: 1.5;
+  margin: 0.5rem 0 0;
+}
+
+.providerCredit a,
+.tmdbCredit a { color: var(--accent-red); }
+
+.recommendationRail {
+  grid-auto-columns: minmax(13.5rem, 17rem);
+}
+
+.recommendationCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.65rem;
+  color: var(--text-primary);
+  display: grid;
+  min-height: 9rem;
+  overflow: hidden;
+  text-decoration: none;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.recommendationCard:hover,
+.recommendationCard:focus-visible {
+  border-color: color-mix(in srgb, var(--text-primary) 30%, transparent);
+  outline: none;
+  transform: translateY(-3px);
+}
+
+.recommendationCard img {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  width: 100%;
+}
+
+.recommendationCard > span {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.8rem;
+}
+
+.recommendationCard strong { font-size: 0.86rem; }
+.recommendationCard small { color: var(--text-muted); font-size: 0.72rem; }
+
+.tmdbCredit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.episodeContainer {
+  /* Painel sólido próprio: a lista fica por cima da arte do filme, e sem uma superfície atrás o
+     texto escuro do tema claro cairia direto na imagem e sumiria. */
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  margin-top: 1.5rem;
+  padding: clamp(1rem, 2.5vw, 1.6rem);
+}
+
+/* Temporadas como texto sublinhado, no mesmo idioma dos links da navbar. A pílula roxa de antes
+   não existia em nenhum outro lugar do sistema. */
+.seasonTabs {
+  display: flex;
+  gap: 1.4rem;
+  margin-bottom: 1.5rem;
+  max-width: 100%;
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+  scrollbar-width: thin;
+}
+
+.seasonTab,
+.seasonTabActive {
+  background: none;
+  border: 0;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex: 0 0 auto;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  padding: 0.3rem 0;
+  position: relative;
+  white-space: nowrap;
+}
+
+.seasonTab:hover,
+.seasonTab:focus-visible {
+  color: var(--text-primary);
+  outline: none;
+}
+
+.seasonTabActive {
+  color: var(--text-primary);
+}
+
+.seasonTabActive::after {
+  background: var(--text-primary);
+  border-radius: 2px;
+  bottom: 0;
+  content: "";
+  height: 2px;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.episodeGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+}
+
+.episodeSkeletonCard {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.episodeSkeletonFrame,
+.episodeSkeletonLine {
+  background: linear-gradient(100deg, rgba(255,255,255,0.06) 20%, rgba(255,255,255,0.14) 45%, rgba(255,255,255,0.06) 70%);
+  background-size: 220% 100%;
+  animation: episodeSkeletonPulse 1.25s ease-in-out infinite;
+}
+
+.episodeSkeletonFrame {
+  aspect-ratio: 16 / 9;
+  border-radius: 0.5rem;
+}
+
+.episodeSkeletonLine {
+  border-radius: 999px;
+  display: block;
+  height: 0.75rem;
+  width: 70%;
+}
+
+.episodeSkeletonHeading { height: 1rem; width: 6rem; }
+.episodeSkeletonShort { width: 42%; }
+
+@keyframes episodeSkeletonPulse {
+  to { background-position: -220% 0; }
+}
+
+.episodeCard,
+.episodeCardActive {
+  background: none;
+  border: 0;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: grid;
+  font: inherit;
+  gap: 0.55rem;
+  min-width: 0;
+  padding: 0;
+  text-align: left;
+}
+
+/* O quadro do episódio carrega tudo que antes era texto: número, visto e progresso. */
+.episodeFrame {
+  aspect-ratio: 16 / 9;
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.episodeCard:hover .episodeFrame,
+.episodeCard:focus-visible .episodeFrame {
+  border-color: color-mix(in srgb, var(--text-primary) 30%, transparent);
+  box-shadow: var(--shadow-md);
+  outline: none;
+}
+
+.episodeCardActive .episodeFrame {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 2px var(--text-primary);
+}
+
+.episodeFrame img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.episodeBadge,
+.episodeWatched {
+  align-items: center;
+  background: rgba(10, 10, 10, 0.82);
+  color: #fff;
+  display: inline-flex;
+  font-size: 0.66rem;
+  font-weight: 900;
+  height: 1.5rem;
+  justify-content: center;
+  letter-spacing: 0.06em;
+  position: absolute;
+  top: 0.5rem;
+}
+
+.episodeBadge {
+  border-radius: 999px;
+  left: 0.5rem;
+  padding: 0 0.5rem;
+}
+
+.episodeWatched {
+  border-radius: 50%;
+  font-size: 0.8rem;
+  right: 0.5rem;
+  width: 1.5rem;
+}
+
+.episodeProgress {
+  background: rgba(10, 10, 10, 0.45);
+  bottom: 0;
+  height: 3px;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.episodeProgress > i {
+  background: #fff;
+  display: block;
+  height: 100%;
+}
+
+/* Uma linha de texto e só: título e, embaixo, data ou onde parou. */
+.episodeCaption {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.episodeCaption strong {
+  font-size: 0.88rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.episodeCaption span {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+/* ==========================================================================
+   Watch Progress Card (Continuar Assistindo)
+   ========================================================================== */
+.progressCard {
+  background: rgba(20, 20, 20, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.65rem;
+  padding: 0.85rem 1.15rem;
+  max-width: 32rem;
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.progressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.progressTag {
+  color: var(--accent-red, #527f4d);
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.progressTime {
+  color: #e5e5e5;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.progressBarBg {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  height: 0.45rem;
+  overflow: hidden;
+  width: 100%;
+}
+
+.progressBarFill {
+  background: linear-gradient(90deg, #527f4d 0%, #8bcf7e 100%);
+  border-radius: 9999px;
+  height: 100%;
+  box-shadow: 0 0 8px rgba(82, 127, 77, 0.8);
+  transition: width 0.3s ease;
+}
+
+/* ==========================================================================
+   Action Buttons
+   ========================================================================== */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: 0.8rem;
+}
+
+.primaryButton {
+  align-items: center;
+  background: #ffffff;
+  border: 0;
+  border-radius: 0.45rem;
+  color: #000000;
+  display: inline-flex;
+  font-size: 1.02rem;
+  font-weight: 850;
+  gap: 0.65rem;
+  min-height: 3.25rem;
+  padding: 0 1.65rem;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.85);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
+}
+
+.primaryButton:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.secondaryButton {
+  align-items: center;
+  background: rgba(109, 109, 110, 0.7);
+  border: 0;
+  border-radius: 0.45rem;
+  color: #ffffff;
+  display: inline-flex;
+  font-size: 0.95rem;
+  font-weight: 750;
+  gap: 0.55rem;
+  min-height: 3.25rem;
+  padding: 0 1.25rem;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background: rgba(109, 109, 110, 0.5);
+  transform: translateY(-2px);
+}
+
+.secondaryButton:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.stremioButton {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.45rem;
+  color: #d4d4d4;
+  display: inline-flex;
+  font-size: 0.92rem;
+  font-weight: 650;
+  min-height: 3.25rem;
+  padding: 0 1.25rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.stremioButton:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   Player Section
+   ========================================================================== */
+.player {
+  align-items: center;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  inset: 0;
+  margin: 0;
+  position: fixed;
+  width: 100vw;
+  z-index: 100;
+}
+
+/* No Tauri este elemento é apenas a âncora do plugin. O GStreamer permanece nativo e o
+   plugin abre automaticamente a região exata sob ele; controles React continuam no portal. */
+.tauriSurface {
+  background: #000;
+  inset: 0;
+  position: fixed;
+  z-index: 100;
+}
+.tauriVideo { display: block; height: 100%; width: 100%; }
+
+.playbackLoading {
+  align-items: center;
+  background: #000;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  inset: 0;
+  justify-content: center;
+  position: fixed;
+  z-index: 100;
+}
+
+.playbackLoading strong { font-size: 1.1rem; }
+.playbackLoading > span { color: #a3a3a3; font-size: 0.82rem; }
+
+.loadingSpinner {
+  animation: player-spin 0.8s linear infinite;
+  border: 3px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  border-top-color: var(--accent-red, #527f4d);
+  height: 2.8rem;
+  width: 2.8rem;
+}
+
+@keyframes player-spin { to { transform: rotate(360deg); } }
+
+.playerClose {
+  align-items: center;
+  background: rgba(15, 15, 15, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  font-size: 1.8rem;
+  height: 2.75rem;
+  justify-content: center;
+  line-height: 1;
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  width: 2.75rem;
+  z-index: 110;
+}
+
+.playerClose:hover,
+.playerClose:focus-visible {
+  background: var(--accent-red, #527f4d);
+  outline: 2px solid #fff;
+}
+
+.notice {
+  background: #1e2128;
+  border-left: 4px solid var(--accent-red, #527f4d);
+  color: #e5e5e5;
+  margin-top: 2rem;
+  padding: 1.1rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  font-size: 0.92rem;
+}
+
+/* Aviso acionável de biblioteca (adicionar/remover falhou): fica visível até a pessoa tentar de
+   novo ou dispensar — nunca some sozinho, ao contrário do .playerToast abaixo. */
+.libraryNotice {
+  align-items: center;
+  background: #1e2128;
+  border-left: 4px solid var(--accent-red, #527f4d);
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: #e5e5e5;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  gap: 0.75rem;
+  justify-content: space-between;
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+}
+
+.libraryNotice p {
+  margin: 0;
+}
+
+.libraryNoticeActions {
+  display: flex;
+  flex: none;
+  gap: 0.5rem;
+}
+
+.libraryNoticeActions button {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0.4rem;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 0.35rem 0.85rem;
+}
+
+.libraryNoticeActions button:hover,
+.libraryNoticeActions button:focus-visible {
+  border-color: var(--accent-red, #527f4d);
+}
+
+.vidstack {
+  --video-brand: #6fa568;
+  --video-focus-ring-color: #8fc487;
+  --media-menu-checkbox-bg-active: #6fa568;
+  --media-slider-track-fill-bg: #6fa568;
+  --media-slider-thumb-bg: #f5f5f5;
+  aspect-ratio: auto;
+  background: #000;
+  border-radius: 0;
+  box-shadow: none;
+  flex: 1 1 auto;
+  margin: 0;
+  max-height: 100%;
+  max-width: none;
+  min-height: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+/* Barra inspirada no player de referência: gradiente forte na base, controles brancos e a
+   identidade verde do Cebola apenas no progresso/foco. */
+.vidstack :global(.vds-controls[data-visible]) {
+  background-image: linear-gradient(to top, rgba(0, 0, 0, 0.94), rgba(0, 0, 0, 0.5) 32%, transparent 72%);
+}
+
+.vidstack :global(.vds-controls-group:last-child) {
+  padding: 0.65rem clamp(0.6rem, 2vw, 1.5rem) 1rem;
+}
+
+.vidstack :global(.vds-time-slider) {
+  --media-slider-track-fill-bg: #6fa568;
+  --media-slider-track-progress-bg: rgba(255, 255, 255, 0.55);
+}
+
+.vidstack video {
+  height: 100% !important;
+  inset: 0;
+  object-fit: contain !important;
+  position: absolute;
+  width: 100% !important;
+}
+
+.vidstack :global(.vds-captions) {
+  inset: 2% 3% max(8%, var(--player-controls-subtitle-bottom, 0px));
+  z-index: 10;
+  pointer-events: none;
+  /* Frases empilhadas embaixo e centralizadas, como o overlay dos players nativos. */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* O posicionamento que o media-captions calcula (offsetLeft/offsetTop convertidos em %) saía
+   torto na TV Samsung: a frase, já com 100% de largura, ganhava `--cue-left` de 30% a 240% e era
+   cortada na lateral. Legenda de streaming é SRT, sem posição própria — basta o fluxo acima. */
+.vidstack :global(.vds-captions [data-part="cue-display"]) {
+  position: static !important;
+  inset: auto !important;
+  width: auto !important;
+  max-width: 100%;
+  transform: none !important;
+  text-align: center !important;
+}
+
+.vidstack :global(.vds-captions [data-part="cue"]) {
+  font-family: var(--media-cue-font, "Inter", ui-sans-serif, system-ui, sans-serif);
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--media-cue-color, #ffffff) !important;
+  background-color: var(--media-cue-bg, transparent) !important;
+  border-radius: 4px;
+  padding: 0.25em 0.55em;
+  paint-order: stroke fill;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.95), 0 0 10px rgba(0, 0, 0, 0.9);
+  -webkit-text-stroke: var(--media-cue-stroke, 0.05em #000);
+}
+
+/* Legenda estilo Netflix, só na TV (`data-tv-captions`): fonte embutida, sem traço grosso, sombra
+   em halo, frase com até 80% da largura. Variáveis vêm de tv-subtitle-style.ts. */
+.vidstack[data-tv-captions] :global(.vds-captions [data-part="cue-display"]) {
+  max-width: 80%;
+}
+
+/* "Altura" da legenda (subtitleSettings.position, em vh) sobe a caixa a partir dos 8% base. */
+.vidstack[data-tv-captions] :global(.vds-captions) {
+  bottom: max(calc(8% + var(--tv-cue-lift, 0vh)), var(--player-controls-subtitle-bottom, 0px));
+}
+
+.vidstack[data-tv-captions] :global(.vds-captions [data-part="cue"]) {
+  font-weight: var(--tv-cue-weight, 500);
+  line-height: 1.3;
+  text-shadow: var(--tv-cue-shadow, none);
+}
+
+.captionAppearance {
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.4rem;
+  padding: 0.8rem;
+}
+
+.captionAppearance strong {
+  font-size: 0.8rem;
+  color: #fff;
+}
+
+.captionAppearance label {
+  align-items: center;
+  display: grid;
+  font-size: 0.75rem;
+  gap: 0.3rem;
+  grid-template-columns: 1fr auto;
+  color: #e5e5e5;
+}
+
+.captionAppearance input[type="range"] {
+  width: 8rem;
+}
+
+.captionAppearance input[type="color"] {
+  background: transparent;
+  border: 0;
+  height: 1.8rem;
+  width: 3rem;
+}
+
+/* O aviso flutua SOBRE o vídeo e some sozinho, em vez de empurrar a página para baixo. Ele é
+   raro agora: só aparece quando este aparelho de fato não decodifica a fonte. */
+.playerToast {
+  animation: playerToastIn 220ms ease-out;
+  background: rgba(22, 24, 29, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.5rem;
+  bottom: 5.5rem;
+  color: #ededed;
+  font-size: 0.82rem;
+  left: 50%;
+  line-height: 1.45;
+  margin: 0;
+  max-width: min(90%, 34rem);
+  padding: 0.7rem 0.95rem;
+  pointer-events: none;
+  position: absolute;
+  transform: translateX(-50%);
+  z-index: 5;
+}
+
+@keyframes playerToastIn {
+  from { opacity: 0; transform: translate(-50%, 0.5rem); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .playerToast { animation: none; }
+}
+
+/* Resumo da fonte dentro do menu de engrenagem do player. Sem nome de torrent, sem contagem de
+   seeders: quem quiser esse detalhe abre a lista. */
+.sourceSummary {
+  color: #a3a3a3;
+  font-size: 0.76rem;
+  margin: 0;
+}
+
+.sourceButton {
+  background: #262a33;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0.4rem;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  min-height: 2.5rem;
+  padding: 0 0.75rem;
+  width: 100%;
+}
+
+.sourceButton:hover { background: #343a46; }
+
+/* Ajuste de sincronia da legenda: dois botões e o estado atual entre eles. */
+.subtitleSync {
+  align-items: center;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: 1fr auto 1fr;
+}
+
+.subtitleSync button {
+  background: #262a33;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0.4rem;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  min-height: 2.5rem;
+  padding: 0 0.6rem;
+}
+
+.subtitleSync button:hover { background: #343a46; }
+
+.subtitleSync span {
+  color: #a3a3a3;
+  font-size: 0.76rem;
+  min-width: 6.5rem;
+  text-align: center;
+}
+
+.state {
+  align-items: center;
+  background: #16181d;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  justify-content: center;
+  min-height: 100vh;
+  color: #fff;
+}
+
+.state a {
+  color: var(--accent-red, #527f4d);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   Stream Options Modal
+   ========================================================================== */
+.modalBackdrop {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(14px);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1.25rem;
+  position: fixed;
+  z-index: 150;
+}
+
+.modal {
+  background: #1e2128;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.85rem;
+  box-shadow: 0 2rem 6rem rgba(0, 0, 0, 0.9);
+  max-height: 85vh;
+  max-width: 52rem;
+  overflow-y: auto;
+  padding: 2.25rem;
+  position: relative;
+  width: 100%;
+}
+
+.modal:focus {
+  outline: none;
+}
+
+.modal h2 {
+  margin: 0 0 1.25rem;
+  padding-right: 2.2rem;
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.modal .notice {
+  margin-top: 0;
+}
+
+.manualChoiceHint {
+  color: #bdbdbd;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  margin: -0.5rem 0 0.65rem;
+}
+
+.qualityChooser {
+  background: #262a33;
+  border-radius: 0.65rem;
+  display: grid;
+  gap: 0.8rem;
+  margin-bottom: 1.4rem;
+  padding: 1rem;
+}
+
+.qualityChooser > strong { color: #fff; font-size: 0.9rem; }
+
+.qualityOptions {
+  display: grid;
+  gap: 0.45rem;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.qualityOption,
+.qualityOptionActive {
+  background: #1c1f26;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.5rem;
+  color: #fff;
+  cursor: pointer;
+  display: grid;
+  font: inherit;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.qualityOptionActive {
+  background: #343a46;
+  border-color: #fff;
+}
+
+.qualityOption:disabled,
+.qualityOptionActive:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.qualityOption span,
+.qualityOptionActive span { font-size: 0.82rem; font-weight: 750; }
+.qualityOption small,
+.qualityOptionActive small { color: #bdbdbd; font-size: 0.68rem; line-height: 1.35; }
+
+.modalStremioLink {
+  color: #fff;
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  justify-self: start;
+  margin-bottom: 1.4rem;
+}
+
+.modalClose {
+  align-items: center;
+  background: #262a33;
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  font-size: 1.4rem;
+  height: 2.2rem;
+  justify-content: center;
+  position: absolute;
+  right: 1.25rem;
+  top: 1.25rem;
+  width: 2.2rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.modalClose:hover,
+.modalClose:focus-visible {
+  background: var(--accent-red, #527f4d);
+  outline: none;
+}
+
+.modalLoading {
+  color: #a3a3a3;
+  padding: 2rem 0;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.streamGroup + .streamGroup {
+  margin-top: 1.75rem;
+}
+
+.streamGroup h3 {
+  color: var(--accent-red, #527f4d);
+  font-size: 0.82rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+}
+
+.streamQualityGroup + .streamQualityGroup {
+  margin-top: 1.25rem;
+}
+
+.streamQualityGroup h4 {
+  color: #e5e5e5;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.6rem;
+}
+
+.streamGrid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+}
+
+.streamOption {
+  background: #1c1f26;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.55rem;
+  color: white;
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+  text-align: left;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.streamOption:hover,
+.streamOption:focus-visible {
+  border-color: var(--accent-purple, #806096);
+  background: #262a33;
+  outline: none;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(128, 96, 150, 0.28);
+}
+
+.streamAddon {
+  color: #a3a3a3;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.streamMeta {
+  color: #e5e5e5;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.streamWarning {
+  color: #ff9999;
+  font-size: 0.74rem;
+}
+
+.playerLoadingOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.9rem;
+  padding: 2rem;
+  color: #fff;
+  text-align: center;
+  background: rgba(8, 10, 13, 0.94);
+}
+
+.playerLoadingOnly {
+  background: #000;
+}
+
+.playerLoadingOverlay strong { font-size: clamp(1.2rem, 3vw, 1.8rem); }
+.playerLoadingOverlay p { max-width: 34rem; margin: 0; color: #b9bdc7; }
+.playerLoadingOverlay button {
+  margin-top: 0.5rem;
+  padding: 0.7rem 1.25rem;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  background: #252932;
+  border: 1px solid #4a505d;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.playerLoadingSpinner {
+  width: 3rem;
+  height: 3rem;
+  border: 4px solid rgba(255, 255, 255, 0.18);
+  border-top-color: #79bf6a;
+  border-radius: 50%;
+  animation: playerLoadingSpin 0.8s linear infinite;
+}
+
+@keyframes playerLoadingSpin { to { transform: rotate(360deg); } }
+
+@media (max-width: 768px) {
+  .details {
+    min-height: calc(100vh - 4.5rem);
+    padding-top: 1rem;
+  }
+
+  .editorialGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .posterWrapper {
+    max-width: 14rem;
+  }
+
+  .title {
+    font-size: clamp(2.2rem, 9vw, 3.5rem);
+  }
+
+  .modal {
+    padding: 1.4rem;
+  }
+
+  .qualityOptions {
+    grid-template-columns: 1fr;
+  }
+
+  .editorialSections { gap: 2.4rem; }
+  .factGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .providerRow { grid-template-columns: 1fr; gap: 0.45rem; }
+
+  /* Herói MUBI no mobile: a arte de tela cheia vira um fundo ambiente desfocado atrás de um
+     cartão com pôster retrato, título, meta e Play em destaque — como a referência (Netflix
+     mobile). Swipe/toque continuam funcionando; só a apresentação muda. Desktop/TV mantêm o
+     herói de tela cheia como está, fora desta media query. */
+  .heroBackdrop,
+  .heroTeaser {
+    filter: blur(26px) brightness(0.45);
+    transform: scale(1.1);
+  }
+
+  .mubiHeroSection {
+    align-items: center;
+    /* No desktop o herói ocupa uma tela inteira; no celular isso deixava uma área vazia entre
+       as ações e a ficha quando o cartão terminava antes do viewport. */
+    min-height: auto;
+    padding-bottom: 2rem;
+    text-align: center;
+  }
+
+  /* O cabeçalho (voltar + nota) precisa continuar esticado de ponta a ponta — só o conteúdo
+     de baixo (título, meta, ações) é que centraliza. */
+  .mubiHeader {
+    align-self: stretch;
+  }
+
+  .mubiHeroBottom {
+    align-items: center;
+    margin-top: 2rem;
+    text-align: center;
+  }
+
+  .mubiPoster {
+    display: block;
+    margin: 0 auto 0.5rem;
+    aspect-ratio: 2 / 3;
+    width: min(68vw, 18rem);
+    object-fit: cover;
+    border-radius: 0.9rem;
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.55);
+  }
+
+  .mubiTitleArea {
+    /* No mobile o título já faz parte do pôster. Repeti-lo como logo enorme abaixo criava duas
+       manchetes concorrentes (especialmente em séries como Ted Lasso). */
+    display: none;
+  }
+
+  .mubiTitleLogoWrapper {
+    justify-content: center;
+  }
+
+  /* A grade de 3 colunas já colapsa para 1fr aqui (regra de 960px, acima); só precisa
+     continuar esticando para acompanhar a largura do cartão centralizado. */
+  .mubiBottomGrid {
+    align-self: stretch;
+  }
+
+  .mubiColMain {
+    align-items: center;
+  }
+
+  .mubiTechBadges,
+  .mubiAudioSubs {
+    justify-content: center;
+  }
+
+  /* Play primário: única ação em destaque do cartão mobile — as demais viram ícones
+     secundários com rótulo, abaixo dele. */
+  .mubiMobilePrimaryActions {
+    display: flex;
+    gap: 0.7rem;
+    margin-top: 0.5rem;
+    width: 100%;
+  }
+
+  .mubiPlayBtn {
+    display: flex;
+    flex: 1 1 58%;
+    margin: 0;
+  }
+
+  .mubiMobileLibraryBtn {
+    align-items: center;
+    background: rgba(30, 30, 33, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.85rem;
+    color: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    flex: 1 1 42%;
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 800;
+    gap: 0.4rem;
+    justify-content: center;
+    min-height: 3rem;
+    padding: 0.75rem;
+  }
+
+  .mubiDesktopLibraryBtn {
+    display: none;
+  }
+
+  .mubiActionButtons {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* O cartão do herói já oferece Assistir e Minha Lista. A repetição abaixo pertencia ao layout
+     de detalhes desktop e, no celular, só duplicava as duas ações sem acrescentar capacidade. */
+  .actions {
+    display: none;
+  }
+
+  .mubiCircleBtn {
+    width: auto;
+    min-width: 3.4rem;
+    height: auto;
+    padding: 0.55rem 0.85rem;
+    border-radius: 1rem;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .mubiBtnLabel {
+    display: block;
+    font-size: 0.62rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+}
+
+/* ==========================================================================
+   Layout de TV (docs/superpowers/plans/2026-09-27-interface-tv-projetor.md,
+   Task 3). Só existe sob html[data-tv-layout] — PC e celular ficam como sempre.
+   Sem backdrop-filter/blur/animação (projetor roda numa WebView fraca).
+   ========================================================================== */
+
+:global(html[data-tv-layout]) .page {
+  padding: 0 var(--tv-safe-x) 4rem;
+}
+
+/* Sem blur/backdrop-filter na TV (pedido do plano) — `data-tv-lite` já corta isso no projetor,
+   mas a Tizen não usa o modo leve, então o popup de fontes/avaliação precisa da própria regra. */
+:global(html[data-tv-layout]) .modalBackdrop,
+:global(html[data-tv-layout]) .reviewModalBackdrop,
+:global(html[data-tv-layout]) .mubiBackBtn,
+:global(html[data-tv-layout]) .progressCard {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transition: none;
+}
+
+/* Botões pequenos/circulares e o pôster retrato (mobile) somem — a fileira grande de baixo
+   (.tvActionsRow) já cobre as mesmas ações num tamanho dá pra ler de longe. */
+:global(html[data-tv-layout]) .mubiActionButtons,
+:global(html[data-tv-layout]) .mubiMobilePrimaryActions,
+:global(html[data-tv-layout]) .mubiPoster,
+:global(html[data-tv-layout]) .actions {
+  display: none;
+}
+
+:global(html[data-tv-layout]) .mubiHeroSection {
+  max-width: none;
+}
+
+:global(html[data-tv-layout]) .mubiBackBtn {
+  width: 3.2rem;
+  height: 3.2rem;
+}
+
+:global(html[data-tv-layout]) .mubiBackBtn:focus-visible {
+  background: #fff;
+  border-color: #fff;
+  color: #16181d;
+  outline: var(--tv-focus-border);
+  outline-offset: 3px;
+}
+
+:global(html[data-tv-layout]) .mubiTitle,
+:global(html[data-tv-layout]) .mubiTitleLogo {
+  font-size: var(--tv-font-row-title);
+  max-height: 8rem;
+}
+
+:global(html[data-tv-layout]) .mubiEyebrow,
+:global(html[data-tv-layout]) .mubiOriginalTitle,
+:global(html[data-tv-layout]) .mubiDirector,
+:global(html[data-tv-layout]) .mubiOriginYear,
+:global(html[data-tv-layout]) .mubiGenres,
+:global(html[data-tv-layout]) .mubiMetaItem,
+:global(html[data-tv-layout]) .mubiBadge,
+:global(html[data-tv-layout]) .mubiBadgeRating,
+:global(html[data-tv-layout]) .mubiColHeading,
+:global(html[data-tv-layout]) .sectionKicker,
+:global(html[data-tv-layout]) .sectionCount {
+  font-size: var(--tv-font-small);
+}
+
+:global(html[data-tv-layout]) .mubiSynopsisText,
+:global(html[data-tv-layout]) .mubiOpinionText,
+:global(html[data-tv-layout]) .mubiReviewComment,
+:global(html[data-tv-layout]) .mubiReviewCommentMuted,
+:global(html[data-tv-layout]) .episodeCaption strong,
+:global(html[data-tv-layout]) .personCard strong,
+:global(html[data-tv-layout]) .recommendationCard strong,
+:global(html[data-tv-layout]) .factGrid strong,
+:global(html[data-tv-layout]) .factGrid span,
+:global(html[data-tv-layout]) .providerRow strong,
+:global(html[data-tv-layout]) .provider,
+:global(html[data-tv-layout]) .providerCredit {
+  font-size: var(--tv-font-body);
+  line-height: 1.5;
+}
+
+/* Fileira de botões grandes (Continuar/Assistir do início, Episódios, Minha Lista, Assistido,
+   Avaliar, Escolher fonte) — ~64px de altura pedidos pelo plano; foco = fundo branco/texto
+   escuro, igual pedido pra TV em todo o app. */
+.tvActionsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin-top: 1.6rem;
+}
+
+.tvBigButton {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0.6rem;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: var(--tv-font-small);
+  font-weight: 700;
+  gap: 0.6rem;
+  min-height: 4rem;
+  padding: 0 1.5rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.tvBigButton:focus-visible {
+  background: #fff;
+  border-color: #fff;
+  color: #16181d;
+  outline: var(--tv-focus-border);
+  outline-offset: 3px;
+}
+
+.tvBigButton:disabled {
+  opacity: 0.5;
+}
+
+/* "Assistido" é só indicador hoje (não existe ação de marcar/desmarcar fora do episódio) —
+   sem cursor de clique, pra não parecer uma ação que não existe. */
+span.tvBigButton {
+  cursor: default;
+}
+
+/* Episódios: de grade (PC) pra fileira horizontal única, como a referência pedida. */
+:global(html[data-tv-layout]) .episodeGrid {
+  display: flex;
+  gap: 1.3rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scrollbar-width: thin;
+}
+
+:global(html[data-tv-layout]) .episodeCard,
+:global(html[data-tv-layout]) .episodeCardActive {
+  flex: 0 0 22rem;
+}
+
+:global(html[data-tv-layout]) .episodeFrame {
+  border-width: 2px;
+}
+
+/* Foco com borda branca de 4px, pedida pro focinho de fileira em toda a página de TV. */
+:global(html[data-tv-layout]) .episodeCard:focus-visible .episodeFrame,
+:global(html[data-tv-layout]) .personCard:focus-visible,
+:global(html[data-tv-layout]) .recommendationCard:focus-visible {
+  border-color: #fff;
+  border-width: 2px;
+  box-shadow: none;
+  outline: none;
+}
+
+:global(html[data-tv-layout]) .personCard {
+  border-width: 2px;
+}
+
+:global(html[data-tv-layout]) .seasonTab:focus-visible,
+:global(html[data-tv-layout]) .seasonTabActive:focus-visible {
+  background: #fff;
+  border-radius: 0.4rem;
+  color: #16181d;
+  outline: var(--tv-focus-border);
+  outline-offset: 2px;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+/* Ligações do bloco de informações (Ver dados no TMDB, Ver opções no TMDB) também ganham o
+   mesmo foco branco dos botões grandes. */
+:global(html[data-tv-layout]) .tmdbCredit a:focus-visible,
+:global(html[data-tv-layout]) .providerCredit a:focus-visible {
+  background: #fff;
+  color: #16181d;
+  outline: var(--tv-focus-border);
+  outline-offset: 2px;
+}
+
+/* Popup de fontes na TV: mesma marcação de sempre (nenhum JSX novo), só vira lista de itens
+   altos em coluna única — pedido do plano ("itens altos navegável") — em vez da grade do PC. */
+:global(html[data-tv-layout]) .streamGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+:global(html[data-tv-layout]) .streamOption {
+  font-size: var(--tv-font-small);
+  min-height: 4rem;
+  padding: 1.1rem 1.4rem;
+}
+
+:global(html[data-tv-layout]) .streamOption:focus-visible {
+  background: #fff;
+  color: #16181d;
+  outline: var(--tv-focus-border);
+  outline-offset: 2px;
+}
+
+:global(html[data-tv-layout]) .modal,
+:global(html[data-tv-layout]) .reviewModal {
+  font-size: var(--tv-font-body);
+  max-width: 64rem;
+}
+
+:global(html[data-tv-layout]) .reviewStarBtn:focus-visible,
+:global(html[data-tv-layout]) .reviewSaveBtn:focus-visible,
+:global(html[data-tv-layout]) .modalClose:focus-visible,
+:global(html[data-tv-layout]) .reviewModalClose:focus-visible,
+:global(html[data-tv-layout]) .qualityOption:focus-visible,
+:global(html[data-tv-layout]) .modalStremioLink:focus-visible {
+  background: #fff;
+  color: #16181d;
+  outline: var(--tv-focus-border);
+  outline-offset: 2px;
+}
+
+/* Embrulho técnico do <details> usado só pra destravar ↑/↓ dentro do popup na TV (ver
+   title-experience.tsx) — não deve ter aparência de <details> nenhuma. */
+.tvModalTrap {
+  display: contents;
+}
+
+.tvModalTrap > summary {
+  display: none;
+}
+
+/* ==========================================================================
+   Título na TV em tela única, com abas (referência Netflix). Nada rola: de cima pra baixo,
+   Voltar/nota, o conteúdo da aba (Visão geral numa coluna à esquerda sobre a arte, ou o painel
+   da aba) e as abas fixas no rodapé — elas nunca mudam de lugar ao trocar de aba.
+   ========================================================================== */
+:global(html[data-tv-layout]) .page[data-tv-tab] {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+
+/* Trailer de fundo fora da TV: no projetor já não roda (aparelho fraco) e, onde roda, o
+   YouTube cobria o título com o aviso de erro do player. A arte parada continua. */
+:global(html[data-tv-layout]) .heroTeaser {
+  display: none;
+}
+
+:global(html[data-tv-layout]) .page[data-tv-tab] .mubiHeroSection {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-bottom: 1rem;
+}
+
+:global(html[data-tv-layout]) .page[data-tv-tab] .mubiHeroBottom {
+  gap: 0.4rem;
+}
+
+/* O slogan já aparece em "Nossa opinião"; em cima do logo ele só empurrava tudo pra baixo. */
+:global(html[data-tv-layout]) .page[data-tv-tab] .mubiEyebrow {
+  display: none;
+}
+
+/* Visão geral em UMA coluna à esquerda, na ordem da referência: selos (ano/duração/
+   classificação), sinopse, créditos/gêneros, áudio e legenda, opinião e os botões. */
+:global(html[data-tv-layout]) .page[data-tv-tab] .mubiBottomGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  max-width: min(52rem, 55vw);
+}
+
+:global(html[data-tv-layout]) .page[data-tv-tab] .mubiColMain {
+  display: contents;
+}
+
+/* Selos, créditos, país/ano e áudio/legenda viram a linha de informações e o bloco
+   "Rótulo: valor" da TV (.tvMetaLine/.tvCredits); "Nossa opinião" foi pra aba Detalhes. */
+:global(html[data-tv-layout]) .page[data-tv-tab] .mubiTechBadges,
+:global(html[data-tv-layout]) .page[data-tv-tab] .mubiCreditsText,
+:global(html[data-tv-layout]) .page[data-tv-tab] .mubiAudioSubs,
+:global(html[data-tv-layout]) .page[data-tv-tab] .mubiColOpinion {
+  display: none;
+}
+
+:global(html[data-tv-layout]) .page[data-tv-tab] .mubiColSynopsis { order: 1; }
+:global(html[data-tv-layout]) .page[data-tv-tab] .tvCredits { order: 2; }
+:global(html[data-tv-layout]) .page[data-tv-tab] .tvActionsRow { order: 3; margin-top: 0.6rem; }
+:global(html[data-tv-layout]) .page[data-tv-tab] .tvProgress { order: 4; margin-top: 0; }
+:global(html[data-tv-layout]) .page[data-tv-tab] .libraryNotice { order: 5; }
+
+/* Nome em texto (não o logo), grande e em negrito, como a referência. */
+:global(html[data-tv-layout]) .page[data-tv-tab] .mubiTitle {
+  font-size: 3.4rem;
+  font-weight: 800;
+  line-height: 1.05;
+  margin: 0;
+  max-height: none;
+}
+
+.tvMetaLine {
+  align-items: center;
+  color: rgba(255, 255, 255, 0.72);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--tv-font-small);
+  font-weight: 600;
+  gap: 0.4rem 0.9rem;
+  margin: 0.5rem 0 0.2rem;
+}
+
+.tvMetaStar {
+  color: var(--accent-gold, #e7c46b);
+  font-weight: 800;
+}
+
+.tvMetaBox {
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 0.2rem;
+  font-size: 0.85em;
+  line-height: 1;
+  padding: 0.2rem 0.45rem;
+}
+
+/* Sinopse sem o rótulo "SINOPSE" (a referência não tem). */
+:global(html[data-tv-layout]) .page[data-tv-tab] .mubiColSynopsis .mubiColHeading {
+  display: none;
+}
+
+:global(html[data-tv-layout]) .page[data-tv-tab] .mubiSynopsisText {
+  color: rgba(255, 255, 255, 0.85);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* "Rótulo: valor": rótulo apagado, valor branco, uma linha cada. */
+.tvCredits {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--tv-font-small);
+  gap: 0.25rem;
+  margin: 0;
+}
+
+.tvCredits > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.4rem;
+}
+
+.tvCredits dt {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.tvCredits dd {
+  color: #fff;
+  margin: 0 0.9rem 0 0;
+}
+
+/* "Nossa opinião"/avaliações na aba Detalhes: primeira linha do painel, largura toda. */
+.tvOpinion {
+  display: none;
+}
+
+:global(html[data-tv-layout]) .page[data-tv-tab="detalhes"] .tvOpinion {
+  display: block;
+  grid-column: 1 / -1;
+  grid-row: 1;
+  max-width: 70rem;
+}
+
+/* Botões podem passar da largura do texto (a coluna limita só o texto). */
+:global(html[data-tv-layout]) .page[data-tv-tab] .tvActionsRow {
+  gap: 0.7rem;
+  width: max-content;
+  max-width: calc(100vw - 2 * var(--tv-safe-x));
+}
+
+/* Coluna escura à esquerda, como a referência, pra o texto ler bem sobre qualquer arte. */
+:global(html[data-tv-layout]) .page[data-tv-tab] .heroBackdrop::after {
+  background: linear-gradient(90deg, rgba(10, 11, 14, 0.92) 0%, rgba(10, 11, 14, 0.7) 38%, rgba(10, 11, 14, 0) 70%);
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+
+:global(html[data-tv-layout]) .page[data-tv-tab] .tvBigButton {
+  min-height: 3.4rem;
+  padding: 0 1.2rem;
+}
+
+:global(html[data-tv-layout]) .page[data-tv-tab="geral"] .lowerContent {
+  display: none;
+}
+
+/* Outras abas: some a Visão geral (fica o título), entra o painel da aba logo acima das abas. */
+:global(html[data-tv-layout]) .page[data-tv-tab]:not([data-tv-tab="geral"]) .mubiBottomGrid {
+  display: none;
+}
+
+:global(html[data-tv-layout]) .page[data-tv-tab]:not([data-tv-tab="geral"]) .lowerContent {
+  flex: 0 1 auto;
+  max-height: 58vh;
+  max-width: none;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+  z-index: 5;
+}
+
+:global(html[data-tv-layout]) .page[data-tv-tab] .details,
+:global(html[data-tv-layout]) .page[data-tv-tab] .editorialSections {
+  background: transparent;
+  padding: 0;
+}
+
+/* O "Progresso salvo" de baixo foi pra Visão geral (.tvProgress). */
+:global(html[data-tv-layout]) .page[data-tv-tab] .details > .progressCard {
+  display: none;
+}
+
+.tvProgress {
+  max-width: 34rem;
+}
+
+/* Cada aba mostra só o que é dela. */
+:global(html[data-tv-layout]) .page[data-tv-tab]:not([data-tv-tab="episodios"]) .details,
+:global(html[data-tv-layout]) .page[data-tv-tab="episodios"] .editorialSections {
+  display: none;
+}
+
+:global(html[data-tv-layout]) .page[data-tv-tab="semelhantes"] .editorialSections > :not(.recommendationSection),
+:global(html[data-tv-layout]) .page[data-tv-tab="detalhes"] .editorialSections > .recommendationSection {
+  display: none;
+}
+
+/* Detalhes: ficha e "onde assistir" lado a lado, elenco numa fileira embaixo. */
+:global(html[data-tv-layout]) .page[data-tv-tab="detalhes"] .editorialSections {
+  align-content: start;
+  gap: 1.2rem 2rem;
+  grid-template-columns: 1fr 1fr;
+  max-height: 58vh;
+  max-width: none;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+:global(html[data-tv-layout]) .page[data-tv-tab="detalhes"] .factPanel { grid-column: 1; grid-row: 2; }
+:global(html[data-tv-layout]) .page[data-tv-tab="detalhes"] .providerSection { grid-column: 2; grid-row: 2; }
+:global(html[data-tv-layout]) .page[data-tv-tab="detalhes"] .peopleSection { grid-column: 1 / -1; grid-row: 3; }
+:global(html[data-tv-layout]) .page[data-tv-tab="detalhes"] .tmdbCredit { grid-column: 1 / -1; grid-row: 4; }
+
+:global(html[data-tv-layout]) .page[data-tv-tab="semelhantes"] .editorialSections {
+  max-width: none;
+}
+
+/* Abas: texto em caixa alta, a atual sublinhada (como a referência); foco = fundo branco. */
+.tvTabs {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.5rem;
+  justify-content: center;
+  padding: 0.6rem 0 1.4rem;
+  position: relative;
+  z-index: 5;
+}
+
+.tvTab {
+  background: transparent;
+  border: 0;
+  border-radius: 0.4rem;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--tv-font-small);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 0.6rem 1.2rem;
+  position: relative;
+  text-transform: uppercase;
+}
+
+.tvTabActive {
+  color: #fff;
+}
+
+.tvTabActive::after {
+  background: var(--accent-red, #e50914);
+  bottom: 0;
+  content: "";
+  height: 4px;
+  left: 1.2rem;
+  position: absolute;
+  right: 1.2rem;
+}
+
+.tvTab:focus-visible {
+  background: #fff;
+  color: #16181d;
+  outline: var(--tv-focus-border);
+  outline-offset: 2px;
+}

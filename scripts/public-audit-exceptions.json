@@ -1,0 +1,38 @@
+[
+  {
+    "file": "apps/api/test/books-development.test.ts",
+    "rule": "URL com senha",
+    "sha256": "7408e6fed52bf24071a52d74611fab3aeea3e96f061b76d9e0c46adae779e0db",
+    "reason": "Fixture sintética que verifica a rejeição de URLs com usuário/senha; não é uma credencial real."
+  },
+  {
+    "file": "apps/api/test/books.test.ts",
+    "rule": "URL com senha",
+    "sha256": "16c0bbac8e7849a0e13b20c0f419dde7f5f9e8c83f399cafa179a2c5394fcb41",
+    "reason": "Fixture sintética que verifica a rejeição de URLs com usuário/senha; não é uma credencial real."
+  },
+  {
+    "file": "apps/api/test/stremio-redirects.test.ts",
+    "rule": "URL com senha",
+    "sha256": "40037797f9a74cec2a4e4b90b0114357297aba695aa118512b2c81c42541f53f",
+    "reason": "Fixture sintética que verifica a rejeição de URLs com usuário/senha; não é uma credencial real."
+  },
+  {
+    "file": "apps/api/test/stremio-security.test.ts",
+    "rule": "URL com senha",
+    "sha256": "61f09304f90fb60a859568e4af56f8d671ad676feddc701bc31344a8cecc8bb1",
+    "reason": "Fixture sintética que verifica a rejeição de URLs com usuário/senha; não é uma credencial real."
+  },
+  {
+    "file": "apps/api/test/torrent-trackers.test.ts",
+    "rule": "URL com senha",
+    "sha256": "851d04732aa9c473071b74e217e37fdde07496f49a5c38422e9551468a9bcdd4",
+    "reason": "Fixture sintética que verifica a rejeição de URLs com usuário/senha; não é uma credencial real."
+  },
+  {
+    "file": "third_party/nuvio-tvsmart/services/tizen/runtime/media-http.cjs",
+    "rule": "domínio de instância privada",
+    "sha256": "07a83981c856a5347758e116961d1d5d18715267a3afd6b115201b8f53e04c70",
+    "reason": "Tracker público incluído no runtime upstream. Não é infraestrutura desta instalação. Runtime preservado para manter a verificação de integridade do empacotador."
+  }
+]

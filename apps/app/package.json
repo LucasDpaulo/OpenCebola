@@ -1,0 +1,22 @@
+{
+  "name": "@cebola/app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build:streaming": "bash ../../scripts/android-build-streaming.sh",
+    "test:streaming-storage": "node --test test/temporary-video-storage.test.mjs",
+    "build:web": "node ../../scripts/opencebola.mjs build:web",
+    "sync": "npm run build:web && cap sync android",
+    "sync:ios": "npm run build:web && cap sync ios && node ../../scripts/ios-configure-native.mjs",
+    "apk": "npm run sync && cd android && ./gradlew assembleDebug",
+    "apk:release": "npm run sync && cd android && ./gradlew assembleRelease"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.1",
+    "@capacitor/core": "^8.5.0",
+    "@capacitor/ios": "^8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.0"
+  }
+}

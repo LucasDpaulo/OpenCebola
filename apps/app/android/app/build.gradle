@@ -1,0 +1,114 @@
+apply plugin: 'com.android.application'
+apply plugin: 'org.jetbrains.kotlin.android'
+kotlin { jvmToolchain(21) }
+
+// Habilitar somente no pacote que contém o AAR nativo compilado pelo script dedicado.
+def localStreaming = providers.gradleProperty('cebolaLocalStreaming').orElse('false').get().toBoolean()
+def streamingAar = file('libs/nuvio-engine-release.aar')
+if (localStreaming && !streamingAar.isFile()) {
+    throw new GradleException('Execute scripts/android-build-streaming.sh antes de habilitar cebolaLocalStreaming.')
+}
+
+def releaseKeystorePath = System.getenv('CEBOLA_ANDROID_KEYSTORE_PATH')
+def releaseStorePassword = System.getenv('CEBOLA_ANDROID_STORE_PASSWORD')
+def releaseKeyAlias = System.getenv('CEBOLA_ANDROID_KEY_ALIAS')
+def releaseKeyPassword = System.getenv('CEBOLA_ANDROID_KEY_PASSWORD')
+def releaseVersionCode = (System.getenv('CEBOLA_ANDROID_VERSION_CODE') ?: '1') as Integer
+def releaseVersionName = System.getenv('CEBOLA_ANDROID_VERSION_NAME') ?: '1.0.0'
+
+android {
+    buildFeatures { buildConfig true }
+    sourceSets {
+        main {
+            if (localStreaming) java.srcDir 'src/streaming/kotlin'
+        }
+    }
+    namespace = "br.cebola.app"
+    compileSdk = rootProject.ext.compileSdkVersion
+    defaultConfig {
+        buildConfigField 'boolean', 'LOCAL_STREAMING', localStreaming.toString()
+        applicationId "org.opencebola.app"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode releaseVersionCode
+        versionName releaseVersionName
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        aaptOptions {
+             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
+             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
+            ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+        }
+    }
+    signingConfigs {
+        if (releaseKeystorePath && releaseStorePassword && releaseKeyAlias && releaseKeyPassword) {
+            release {
+                storeFile file(releaseKeystorePath)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
+    }
+    buildTypes {
+        release {
+            if (signingConfigs.findByName('release') != null) {
+                signingConfig signingConfigs.release
+            }
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    splits {
+        abi {
+            enable true
+            reset()
+            // O AAR do libVLC traz dezenas de MB de bibliotecas nativas por arquitetura.
+            // Gerar APKs separados evita distribuir um pacote universal acima de 180 MB.
+            include "arm64-v8a", "armeabi-v7a"
+            universalApk false
+        }
+    }
+}
+
+tasks.matching { it.name == 'assembleRelease' }.configureEach {
+    doFirst {
+        if (!releaseKeystorePath || !releaseStorePassword || !releaseKeyAlias || !releaseKeyPassword) {
+            throw new GradleException('Credenciais de assinatura de release ausentes.')
+        }
+    }
+}
+
+repositories {
+    flatDir{
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    }
+}
+
+dependencies {
+    if (localStreaming) {
+        implementation files(streamingAar)
+        implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
+    }
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation project(':capacitor-android')
+    // Última versão estável; as versões 4.x disponíveis ainda são pré-lançamento.
+    implementation "org.videolan.android:libvlc-all:3.6.2"
+    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
+    implementation project(':capacitor-cordova-android-plugins')
+}
+
+apply from: 'capacitor.build.gradle'
+
+try {
+    def servicesJSON = file('google-services.json')
+    if (servicesJSON.text) {
+        apply plugin: 'com.google.gms.google-services'
+    }
+} catch(Exception e) {
+    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+}

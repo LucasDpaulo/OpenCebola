@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+  <script src="instance.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cebola TV</title>
+    <style>
+      :root { color-scheme: dark; }
+      html, body { height: 100%; margin: 0; }
+      body {
+        display: grid; place-items: center;
+        background: #0b0b0f; color: #f4f4f5;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        text-align: center;
+      }
+      main { max-width: 44rem; padding: 2rem; position: relative; z-index: 2; }
+      /* Com o site no ar, a casca fica transparente: o vídeo do AVPlay é desenhado numa camada
+         da TV por trás do navegador e só aparece onde a página é transparente. O fundo preto
+         vale apenas enquanto a tela de conexão está visível. O color-scheme dark da casca precisa
+         continuar igual ao do site (apps/web/app/styles.css): se divergirem, o Chromium pinta
+         um fundo opaco atrás do iframe e o vídeo some. */
+      html.site-ativo, html.site-ativo body { background: transparent; }
+      /* Player nativo atrás (z-index 1) e site por cima (z-index 3), ambos em tela cheia. */
+      #av-player {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        z-index: 1; background: transparent; border: 0;
+      }
+      #site {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        z-index: 3; border: 0; background: transparent;
+      }
+      .eyebrow { display: block; letter-spacing: .28em; text-transform: uppercase; font-size: 1rem; color: #f97316; }
+      h1 { font-size: 2.4rem; margin: .6rem 0 .4rem; }
+      p { font-size: 1.3rem; color: #a1a1aa; margin: 0; }
+      .spinner {
+        width: 3rem; height: 3rem; margin: 2rem auto 0;
+        border: .35rem solid #27272a; border-top-color: #f97316; border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      button {
+        margin-top: 2rem; font-size: 1.3rem; padding: .8rem 1.8rem;
+        background: #f97316; color: #0b0b0f; border: 0; border-radius: .6rem; cursor: pointer;
+      }
+      button:focus { outline: .25rem solid #fdba74; outline-offset: .25rem; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+  </head>
+  <body>
+    <main id="screen" aria-live="polite">
+      <span class="eyebrow">Cebola TV</span>
+      <h1>Conectando ao Cebola…</h1>
+      <p>Carregando a interface mais recente.</p>
+      <div class="spinner" aria-hidden="true"></div>
+    </main>
+    <script src="ponte.js"></script>
+    <script src="streaming.js"></script>
+    <script type="module">
+      import * as service from "wrt:service";
+      window.CebolaWrtService = service;
+    </script>
+    <script>
+      // Casca de TV: o WGT não embarca a interface. Ele embute, num <iframe> em tela cheia, a mesma
+      // React do PC servida em https://instance.example.invalid, então todo deploy da web atualiza a TV
+      // sem reinstalar o pacote (ver docs/ARQUITETURA.md — estratégia "UI remota + aviso
+      // de versão").
+      // Por que iframe e não location.replace: window.webapis (AVPlay, o player nativo da Samsung)
+      // e window.tizen só existem nesta página local; se a janela virasse o site remoto, o AVPlay
+      // se perderia. Então a casca fica como anfitriã: guarda o AVPlay num <object> atrás do
+      // iframe e o site pede as operações por postMessage (ponte.js). O vídeo aparece porque o
+      // iframe e o fundo da casca são transparentes e o AVPlay desenha numa camada por trás.
+      (function () {
+        var ORIGEM_SITE = window.OPENCEBOLA_INSTANCE.webOrigin;
+        var SITE_URL = ORIGEM_SITE + "/";
+        var PROBE_TIMEOUT_MS = 8000;
+        var screen = document.getElementById("screen");
+        var iframe = null;
+        var ponte = null;
+
+        function connecting() {
+          screen.innerHTML =
+            '<span class="eyebrow">Cebola TV</span>' +
+            "<h1>Conectando ao Cebola…</h1>" +
+            "<p>Carregando a interface mais recente.</p>" +
+            '<div class="spinner" aria-hidden="true"></div>';
+        }
+
+        function offline() {
+          screen.innerHTML =
+            '<span class="eyebrow">Cebola TV</span>' +
+            "<h1>Sem conexão com o Cebola</h1>" +
+            "<p>Verifique a internet da TV. Tentaremos de novo automaticamente.</p>" +
+            '<button id="retry" autofocus>Tentar de novo</button>';
+          var retry = document.getElementById("retry");
+          if (retry) { retry.focus(); retry.addEventListener("click", start); }
+        }
+
+        // Probe por XHR (não fetch): a partir de file://, o fetch esbarra em CORS; o XHR ao
+        // próprio site é coberto pelo <access origin> do config.xml. Alcançar o servidor com
+        // qualquer status já significa online — o roteamento fica com a React.
+        function probe() {
+          return new Promise(function (resolve) {
+            var settled = false;
+            function finish(ok) { if (!settled) { settled = true; resolve(ok); } }
+            var request = new XMLHttpRequest();
+            try {
+              request.open("GET", SITE_URL + "?boot=" + Date.now(), true);
+              request.timeout = PROBE_TIMEOUT_MS;
+              request.onload = function () { finish(true); };
+              request.onerror = function () { finish(false); };
+              request.ontimeout = function () { finish(false); };
+              request.send(null);
+            } catch (error) { finish(false); }
+          });
+        }
+
+        // As teclas de mídia do controle (play/pausa, avançar, voltar…) só chegam ao app depois de
+        // registradas, e o registro precisa do objeto `tizen`, que só existe aqui na casca local
+        // (a interface remota não o recebe). O registro vale para a janela do app, então continua
+        // valendo com o site embutido; o player trata os códigos (player-controls.tsx).
+        function registerMediaKeys() {
+          if (!(window.tizen && window.tizen.tvinputdevice)) return;
+          var keys = ["MediaPlayPause", "MediaPlay", "MediaPause", "MediaStop", "MediaFastForward", "MediaRewind"];
+          try {
+            window.tizen.tvinputdevice.registerKeyBatch(keys, function () {}, function () {});
+          } catch (error) { /* sem o privilégio tv.inputdevice: segue sem as teclas de mídia */ }
+        }
+
+        function exitApp() {
+          if (ponte) ponte.parar();
+          window.CebolaStreaming.background();
+          try { window.tizen.application.getCurrentApplication().exit(); } catch (error) { /* fora da TV */ }
+        }
+
+        // O controle entrega as teclas à janela focada; com o site num iframe, o foco precisa
+        // ficar nele para a navegação por setas e o Voltar chegarem à interface.
+        function focusSite() {
+          if (!iframe) return;
+          try { iframe.focus(); } catch (error) { /* sem foco possível */ }
+          try { iframe.contentWindow.focus(); } catch (error2) { /* contentWindow ainda indisponível */ }
+        }
+
+        // O <object> do AVPlay: o type application/avplayer o liga ao decoder de vídeo da TV.
+        // Fica em tela cheia atrás do iframe (z-index menor) e é criado já no carregamento,
+        // porque o AVPlay precisa dele antes do primeiro vídeo abrir.
+        function createPlayerObject() {
+          var player = document.createElement("object");
+          player.id = "av-player";
+          player.setAttribute("type", "application/avplayer");
+          document.body.appendChild(player);
+        }
+
+        function sendToSite(message) {
+          try {
+            if (iframe && iframe.contentWindow) iframe.contentWindow.postMessage(message, ORIGEM_SITE);
+          } catch (error) { /* site recarregando: a mensagem se perde, o site pede de novo */ }
+        }
+
+        function createBridge() {
+          if (!(window.CebolaPonte && window.CebolaPonte.criarPonte)) return;
+          ponte = window.CebolaPonte.criarPonte({
+            avplay: window.webapis && window.webapis.avplay ? window.webapis.avplay : null,
+            enviar: sendToSite,
+            streaming: window.CebolaStreaming,
+            sair: exitApp,
+            origem: ORIGEM_SITE,
+            janelaSite: function () { return iframe ? iframe.contentWindow : null; }
+          });
+        }
+
+        // Cria o iframe uma única vez; as tentativas seguintes (Tentar de novo) reaproveitam.
+        function showSite() {
+          if (iframe) return;
+          iframe = document.createElement("iframe");
+          iframe.id = "site";
+          iframe.setAttribute("allow", "autoplay; fullscreen; encrypted-media");
+          iframe.setAttribute("title", "Cebola");
+          var firstLoad = true;
+          iframe.addEventListener("load", function () {
+            // A ponte encerra a sessão anterior ao receber o cumprimento do novo documento.
+            if (firstLoad) {
+              firstLoad = false;
+              screen.hidden = true;
+              document.documentElement.className += " site-ativo";
+            }
+            focusSite();
+          });
+          iframe.src = SITE_URL + "?casca=1";
+          document.body.appendChild(iframe);
+        }
+
+        function start() {
+          if (iframe) return;
+          connecting();
+          if (typeof navigator !== "undefined" && navigator.onLine === false) { offline(); return; }
+          probe().then(function (ok) {
+            if (ok) { showSite(); } else { offline(); }
+          });
+        }
+
+        window.addEventListener("online", function () {
+          if (screen.querySelector("#retry")) start();
+        });
+
+        // Voltar no controle, ainda na casca, encerra o app. Com o iframe focado, a tecla vai
+        // para o site, que decide (e pede { cebola: "sair" } quando for o caso).
+        window.addEventListener("keydown", function (event) {
+          var isBack = event.keyCode === 10009 || event.key === "XF86Back" || event.key === "BrowserBack";
+          if (isBack && window.tizen && window.tizen.application) {
+            exitApp();
+          }
+        });
+
+        // Se a janela da casca ganhar o foco de volta (ex.: depois do app voltar do segundo
+        // plano), devolve ao site; sem isso as teclas do controle não chegariam à interface.
+        window.addEventListener("focus", focusSite);
+
+        // Recomendação da Samsung para app que vai para segundo plano: suspender o AVPlay ao
+        // esconder e restaurar ao voltar.
+        document.addEventListener("visibilitychange", function () {
+          if (document.hidden) {
+            if (ponte) { ponte.parar(); }
+            window.CebolaStreaming.background();
+            sendToSite({ cebola: "avplay:evento", tipo: "streaming-stopped", valor: { reason: "BACKGROUND" } });
+          } else if (ponte) {
+            window.CebolaStreaming.foreground();
+          }
+        });
+
+        // Só mensagens do site embutido (origem e janela conferidas dentro da ponte) são aceitas.
+        window.addEventListener("message", function (event) {
+          if (ponte) ponte.receber(event);
+        });
+
+        window.addEventListener("pagehide", function () { window.CebolaStreaming.background(); });
+        createPlayerObject();
+        createBridge();
+        registerMediaKeys();
+        start();
+      })();
+    </script>
+  </body>
+</html>

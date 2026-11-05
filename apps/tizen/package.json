@@ -1,0 +1,15 @@
+{
+  "name": "@cebola/tizen",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Casca WGT da TV Samsung: carrega a interface React de apps/web servida no servidor; empacotamento e verificação do pacote.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "verify:export": "bash ../../scripts/tizen-verificar-export.sh",
+    "verify:wgt": "bash ../../scripts/tizen-verificar-wgt.sh",
+    "prepare:web": "bash ../../scripts/tizen-preparar-web.sh",
+    "doctor": "bash ../../scripts/tizen-sdk-doctor.sh",
+    "package:wgt": "bash ../../scripts/tizen-empacotar-wgt.sh"
+  }
+}

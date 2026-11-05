@@ -1,0 +1,227 @@
+.page {
+  min-height: 100vh;
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2rem);
+  padding: 1rem var(--page-gutter);
+  background: color-mix(in srgb, var(--bg-canvas) 92%, transparent);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* O modo leve do projetor (Android TV, WebView fraca) corta blur/backdrop-filter — ver
+   `data-tv-lite` ligado por TvNavigation. Sem isto o cabeçalho engasgava ao rolar a grade. */
+:global([data-tv-lite="on"]) .header {
+  backdrop-filter: none;
+  background: var(--bg-canvas);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-full);
+}
+
+.brand:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 3px;
+}
+
+.brandIcon {
+  color: var(--accent-red);
+}
+
+.searchForm {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  max-width: 40rem;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 1rem;
+  display: flex;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.searchForm input {
+  width: 100%;
+  height: 3rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  color: var(--text-primary);
+  padding: 0 2.75rem;
+  font-size: 1.05rem;
+}
+
+.searchForm input::placeholder {
+  color: var(--text-muted);
+}
+
+.searchForm input:focus-visible {
+  outline: none;
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 0 3px var(--accent-purple-glow);
+}
+
+.clearButton {
+  position: absolute;
+  right: 0.6rem;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.clearButton:hover,
+.clearButton:focus-visible {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--text-primary) 12%, transparent);
+  outline: none;
+}
+
+.content {
+  padding: 1.5rem var(--page-gutter) 4rem;
+}
+
+.linkNotice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding: 0.9rem 1.1rem;
+  background: color-mix(in srgb, var(--accent-purple) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-purple) 40%, transparent);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+}
+
+.loadingHint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.stateBanner {
+  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--text-primary) 18%, transparent);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.emptyHint {
+  color: var(--text-muted);
+}
+
+/* Grade responsiva estilo HBO Max: pôster + legenda (título e ano) abaixo, sempre visível — ao
+   contrário dos trilhos da home, onde o texto só aparece ao focar/passar o mouse. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 1.5rem 1.25rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+/* `.editorial-card` (global, de home-experience.tsx) já ocupa 100% do item de grid por padrão
+   (grid estica itens de bloco sem largura própria); fixamos aqui só para não depender disso. */
+.card :global(.editorial-card) {
+  width: 100%;
+}
+
+.cardCaption {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.cardTitle {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardMeta {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.notice {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 0.75rem 1rem;
+  z-index: 50;
+}
+
+.notice button {
+  border: 0;
+  background: transparent;
+  color: var(--accent-purple-hover);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .header {
+    gap: 0.75rem;
+    padding: 0.85rem var(--page-gutter);
+  }
+
+  .searchForm input {
+    height: 2.65rem;
+    font-size: 0.95rem;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+    gap: 1.1rem 0.85rem;
+  }
+}

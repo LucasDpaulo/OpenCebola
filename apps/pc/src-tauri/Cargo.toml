@@ -1,0 +1,39 @@
+[package]
+name = "cebola-pc"
+version = "0.1.0"
+description = "Aplicativo Cebola para PC com reprodução nativa pelo tauri-plugin-video"
+edition = "2021"
+rust-version = "1.85"
+
+[build-dependencies]
+tauri-build = { version = "2.0.0", features = [] }
+
+[dependencies]
+tauri = { version = "2.11.5", features = [] }
+# mpv além do GStreamer: o GStreamer continua o padrão, e o mpv (FFmpeg) abre os MKV que ele
+# recusa — ex.: anime com dezenas de MB de fontes anexadas ("reading large block … not supported").
+tauri-plugin-video = { version = "0.3.0", features = ["gstreamer-runtime", "mpv-runtime"] }
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
+serde_json = "1"
+url = "2"
+
+# Só no Windows: requisição de energia que impede a suspensão durante o vídeo (src/windows_native.rs).
+# Mesma versão do plugin de vídeo, para não duplicar o crate no Cargo.lock.
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.61", features = [
+    "Win32_Foundation",
+    "Win32_System_Power",
+    "Win32_System_Threading",
+] }
+
+# O plugin adiciona um ancestral GTK legítimo ao WebView. Esta revisão Tauri
+# contém a correção upstream do downcast inseguro de tauri-runtime-wry 2.11.4.
+# Os três crates precisam vir da mesma revisão para manter os traits coerentes.
+[patch.crates-io]
+# Cópia local do plugin de vídeo: o motor mpv passa a informar os capítulos do arquivo
+# (ver vendor/tauri-plugin-video/src/models.rs, NativeChapter).
+tauri-plugin-video = { path = "vendor/tauri-plugin-video" }
+tauri-runtime = { git = "https://github.com/tauri-apps/tauri.git", rev = "5a882eccfda53a189ec076c79c4ad186f50db5ff" }
+tauri-runtime-wry = { git = "https://github.com/tauri-apps/tauri.git", rev = "5a882eccfda53a189ec076c79c4ad186f50db5ff" }
+tauri-utils = { git = "https://github.com/tauri-apps/tauri.git", rev = "5a882eccfda53a189ec076c79c4ad186f50db5ff" }

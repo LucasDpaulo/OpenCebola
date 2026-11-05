@@ -1,0 +1,33 @@
+{
+  "name": "@cebola/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsx --test test/*.test.ts"
+  },
+  "dependencies": {
+    "@bbc/tv-lrud-spatial": "0.0.18",
+    "@capacitor/core": "^8.5.0",
+    "@cebola/contracts": "*",
+    "@get-air/video": "^0.2.0",
+    "@get-air/video-tauri": "^0.3.0",
+    "@tauri-apps/api": "^2.11.1",
+    "@tauri-apps/plugin-process": "^2.3.1",
+    "@tauri-apps/plugin-updater": "^2.9.0",
+    "@vidstack/react": "^1.15.6",
+    "next": "^16.3.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}

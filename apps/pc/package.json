@@ -1,0 +1,18 @@
+{
+  "name": "@cebola/pc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Aplicativo Cebola para PC: interface compartilhada com Android e player nativo Tauri.",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "NEXT_PUBLIC_CEBOLA_API_URL=\"${CEBOLA_PC_API_URL:-http://localhost:3001}\" tauri dev",
+    "dev:app": "NEXT_PUBLIC_CEBOLA_API_URL=\"${CEBOLA_PC_API_URL:-http://localhost:3001}\" tauri dev",
+    "dev:x11": "NEXT_PUBLIC_CEBOLA_API_URL=\"${CEBOLA_PC_API_URL:-http://localhost:3001}\" GDK_BACKEND=x11 tauri dev",
+    "build:web": "node ../../scripts/opencebola.mjs build:web",
+    "build": "tauri build",
+    "typecheck": "npm run typecheck --workspace=@cebola/web"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.10.0"
+  }
+}

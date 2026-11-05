@@ -1,0 +1,602 @@
+.page {
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(1.25rem, 3vw, 2.5rem) clamp(1.5rem, 5vw, 5rem);
+  box-sizing: border-box;
+  background-color: #16181d;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   Cinematic Background
+   ========================================================================== */
+.cinematicBackground {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: #16181d;
+}
+
+.bgVideo,
+.bgImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 30%;
+  filter: brightness(0.92) contrast(1.05);
+}
+
+.bgIframe {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* Igual ao teaser do catálogo: dar ao YouTube o viewport já ampliado evita que ele escolha
+     resolução para um quadro menor e o navegador estique a imagem depois. */
+  width: 115vw;
+  height: 64.6875vw;
+  min-height: 115vh;
+  min-width: 204.44vh;
+  transform: translate(-50%, -50%);
+  border: 0;
+  pointer-events: none;
+  filter: brightness(0.92) contrast(1.05);
+}
+
+.videoOverlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.12) 50%, rgba(0, 0, 0, 0.25) 100%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.4) 0%, transparent 35%);
+}
+
+/* ==========================================================================
+   Header
+   ========================================================================== */
+.header {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 4rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s ease;
+}
+
+.brand:hover {
+  transform: scale(1.08);
+}
+
+.brandIcon {
+  color: var(--accent-red, #527f4d);
+  filter: drop-shadow(0 0 16px rgba(82, 127, 77, 0.7));
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.glassIconButton,
+.downloadButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.85rem;
+  height: 2.85rem;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+  border-radius: 50%;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  transition: all 0.22s ease;
+}
+
+.glassIconButton:hover,
+.glassIconButton:focus-visible,
+.downloadButton:hover,
+.downloadButton:focus-visible {
+  background: rgba(255, 255, 255, 0.26);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.06);
+  outline: none;
+}
+
+/* ==========================================================================
+   Welcome Mode (Screensaver / Pure Cinema Experience)
+   ========================================================================== */
+.welcomeHero {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  max-width: 80rem;
+  width: 100%;
+  margin: auto;
+  padding: 2rem 0;
+  cursor: pointer;
+  user-select: none;
+  animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.welcomeTitle {
+  font-size: clamp(3.8rem, 8.5vw, 7.5rem);
+  font-weight: 900;
+  line-height: 0.92;
+  letter-spacing: -0.05em;
+  color: #ffffff;
+  margin: 0 0 1.75rem;
+  text-shadow: 0 8px 32px rgba(0, 0, 0, 0.85), 0 2px 10px rgba(0, 0, 0, 0.9);
+  background: linear-gradient(180deg, #ffffff 40%, rgba(255, 255, 255, 0.88) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.enterHint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  padding: 0.65rem 1.4rem;
+  border-radius: 9999px;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.92rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  transition: all 0.25s ease;
+}
+
+.welcomeHero:hover .enterHint {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.45);
+  transform: translateY(-2px);
+}
+
+.hintDot {
+  width: 9px;
+  height: 9px;
+  background-color: #527f4d;
+  border-radius: 50%;
+  box-shadow: 0 0 12px #527f4d;
+  animation: pulseDot 2s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 0.4; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.35); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   Centered Login Card Mode
+   ========================================================================== */
+.centeredLoginContainer {
+  position: relative;
+  z-index: 15;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 2rem 0;
+  animation: loginEntrance 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes loginEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.cardContainer {
+  width: 100%;
+  max-width: 27.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.backButton {
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.86rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  padding: 0.5rem 1.1rem;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+}
+
+.backButton:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.loginCard {
+  background: #ffffff;
+  color: #18181b;
+  border-radius: 2rem;
+  box-shadow: 0 35px 80px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.15);
+  padding: clamp(2.2rem, 4vw, 3.2rem) clamp(1.75rem, 3.5vw, 2.75rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.2rem;
+}
+
+.cardTag {
+  font-size: 0.76rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #527f4d;
+}
+
+.cardHeader h2 {
+  font-size: 2.2rem;
+  font-weight: 850;
+  letter-spacing: -0.03em;
+  color: #0f0f0f;
+  margin: 0;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.field label {
+  color: #4b5563;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.inputWrapper,
+.passwordField {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.inputWrapper input,
+.passwordField input {
+  background: #f4f4f6;
+  border: 1.5px solid #e4e4e7;
+  border-radius: 0.75rem;
+  color: #18181b;
+  font: inherit;
+  font-size: 0.98rem;
+  font-weight: 500;
+  height: 3.4rem;
+  padding: 0 1.15rem;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.passwordField input {
+  padding-right: 3.2rem;
+}
+
+.inputWrapper input:hover,
+.passwordField input:hover {
+  background: #ebebee;
+  border-color: #d4d4d8;
+}
+
+.inputWrapper input:focus,
+.passwordField input:focus {
+  outline: none;
+  background: #ffffff;
+  border-color: #527f4d;
+  box-shadow: 0 0 0 4px rgba(82, 127, 77, 0.18);
+}
+
+.inputWrapper input::placeholder,
+.passwordField input::placeholder {
+  color: #a1a1aa;
+}
+
+.passwordToggle {
+  background: transparent;
+  border: 0;
+  color: #71717a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem;
+  position: absolute;
+  right: 0.65rem;
+  border-radius: 0.35rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.passwordToggle:hover {
+  color: #18181b;
+}
+
+.passwordToggle:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+
+.formMessage {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 0.9rem;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  border-radius: 0.6rem;
+  color: #b91c1c;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.formMessage svg {
+  flex-shrink: 0;
+}
+
+.submitButton {
+  align-items: center;
+  background: #527f4d;
+  border: 0;
+  border-radius: 9999px;
+  color: #ffffff;
+  display: flex;
+  font-size: 1.02rem;
+  font-weight: 750;
+  justify-content: center;
+  gap: 0.65rem;
+  height: 3.45rem;
+  padding: 0 1.6rem;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  width: 100%;
+  margin-top: 0.6rem;
+  box-shadow: 0 6px 20px rgba(82, 127, 77, 0.4);
+  cursor: pointer;
+}
+
+.submitButton:hover {
+  background: #436a3f;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(82, 127, 77, 0.55);
+}
+
+.submitButton:disabled {
+  cursor: wait;
+  opacity: 0.7;
+  transform: none;
+  box-shadow: none;
+}
+
+.loadingIndicator {
+  animation: spin 0.8s linear infinite;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #ffffff;
+  height: 1.15rem;
+  width: 1.15rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   Responsive Breakpoints
+   ========================================================================== */
+@media (max-width: 600px) {
+  .page {
+    padding: 1.25rem 1rem;
+  }
+
+  .welcomeTitle {
+    font-size: 3.2rem;
+  }
+
+  .loginCard {
+    padding: 1.75rem 1.25rem;
+    border-radius: 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bgImage {
+    transition: none;
+  }
+
+  .submitButton,
+  .downloadButton,
+  .enterHint,
+  .backButton {
+    transition: none;
+  }
+
+  .loadingIndicator,
+  .hintDot {
+    animation: none;
+  }
+}
+
+/* ==========================================================================
+   Destaque da semana (TMDB)
+   ========================================================================== */
+.featuredCaption {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-width: 32rem;
+  padding-bottom: clamp(1rem, 3vh, 3rem);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.85);
+  animation: featuredCaptionIn 0.7s ease both;
+}
+
+.featuredKicker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.featuredTitle {
+  font-size: clamp(1.4rem, 3.2vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: #fff;
+}
+
+@keyframes featuredCaptionIn {
+  from { opacity: 0; transform: translateY(0.6rem); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .featuredCaption { animation: none; }
+}
+
+/* ==========================================================================
+   Pareamento de TV (dentro do card branco de login)
+   ========================================================================== */
+.pairingSteps {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+  color: #4b5563;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.pairingSteps strong {
+  color: #18181b;
+  font-weight: 700;
+}
+
+.pairingCode {
+  margin: 1rem 0 0.6rem;
+  padding: 0.9rem 1rem;
+  background: #f4f4f6;
+  border: 1px dashed #527f4d;
+  border-radius: 0.9rem;
+  color: #527f4d;
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: 0.35em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.pairingStatus {
+  margin: 0.6rem 0 0;
+  color: #71717a;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.pairingButton {
+  align-items: center;
+  background: #527f4d;
+  border: 0;
+  border-radius: 9999px;
+  color: #ffffff;
+  display: flex;
+  font-size: 1.02rem;
+  font-weight: 750;
+  justify-content: center;
+  height: 3.45rem;
+  padding: 0 1.6rem;
+  width: 100%;
+  margin-top: 0.9rem;
+  box-shadow: 0 6px 20px rgba(82, 127, 77, 0.4);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.pairingButton:hover,
+.pairingButton:focus-visible {
+  background: #436a3f;
+  outline: none;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(82, 127, 77, 0.55);
+}
+
+.pairingSecondary {
+  margin-top: 0.8rem;
+  background: transparent;
+  border: 0;
+  color: #71717a;
+  font-size: 0.9rem;
+  font-weight: 600;
+  width: 100%;
+  padding: 0.5rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.pairingSecondary:hover,
+.pairingSecondary:focus-visible {
+  color: #18181b;
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pairingButton { transition: none; }
+}

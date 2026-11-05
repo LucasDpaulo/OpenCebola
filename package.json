@@ -1,0 +1,37 @@
+{
+  "name": "opencebola",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Interface independente e auto-hosped\u00e1vel para o ecossistema Stremio.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22.13.0",
+    "npm": ">=9"
+  },
+  "scripts": {
+    "dev:web": "npm run dev --workspace=@cebola/web",
+    "dev:api": "npm run dev --workspace=@cebola/api",
+    "build": "node scripts/opencebola.mjs build",
+    "typecheck": "npm run build --workspace=@cebola/contracts && npm run typecheck --workspace=@cebola/api && npm run typecheck --workspace=@cebola/web",
+    "test": "npm run build --workspace=@cebola/contracts && npm run test --workspace=@cebola/api && npm run test --workspace=@cebola/web",
+    "setup": "node scripts/opencebola.mjs setup",
+    "doctor": "node scripts/opencebola.mjs doctor",
+    "db:start": "node scripts/opencebola.mjs db:start",
+    "db:stop": "node scripts/opencebola.mjs db:stop",
+    "user:add": "node scripts/opencebola.mjs user:add",
+    "dev": "node scripts/opencebola.mjs dev",
+    "native:configure": "node scripts/opencebola.mjs native:configure",
+    "package:roku": "node scripts/opencebola.mjs package:roku",
+    "check:public": "node scripts/check-public.mjs",
+    "test:tooling": "node --test scripts/test/*.test.mjs",
+    "package:android": "node scripts/opencebola.mjs package:android",
+    "package:linux": "node scripts/opencebola.mjs package:linux",
+    "package:windows": "node scripts/opencebola.mjs package:windows",
+    "package:ios": "node scripts/opencebola.mjs package:ios",
+    "package:tizen": "node scripts/opencebola.mjs package:tizen"
+  },
+  "license": "GPL-3.0-or-later"
+}

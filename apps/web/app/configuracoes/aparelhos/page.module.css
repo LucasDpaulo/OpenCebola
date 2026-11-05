@@ -1,0 +1,24 @@
+.page { background: radial-gradient(circle at 80% 5%, rgba(82, 127, 77, 0.12), transparent 36%), #16181d; min-height: 100vh; padding: 0 5vw 5rem; }
+.header { align-items: center; display: flex; justify-content: space-between; min-height: 5rem; }
+.header a { color: #e5e5e5; text-decoration: none; font-weight: 500; font-size: 0.92rem; }
+.header a:hover { color: #fff; }
+.brand { color: var(--accent-red, #527f4d) !important; display: inline-flex; align-items: center; }
+.panel { background: rgba(30, 33, 40, .95); border: 1px solid rgba(255,255,255,.1); border-radius: 1rem; margin: 5vh auto 0; max-width: 42rem; padding: clamp(1.5rem, 5vw, 3rem); box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.7); }
+.panel h1 { font-size: clamp(2.3rem, 7vw, 4.5rem); margin: 0; color: #fff; font-weight: 900; letter-spacing: -0.04em; }
+.eyebrow { color: var(--accent-red, #527f4d); font-size: .75rem; font-weight: 850; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 0.5rem; }
+.copy { color: #a3a3a3; line-height: 1.6; font-size: 0.95rem; margin: 0.8rem 0 0; }
+.form { display: grid; gap: 1rem; margin-top: 2rem; }
+.form label { font-size: .86rem; font-weight: 750; color: #e5e5e5; }
+.form p { color: #a3a3a3; font-size: .85rem; line-height: 1.5; margin: 0; }
+.form button { background: var(--accent-red, #527f4d); border: 0; border-radius: .5rem; color: #ffffff; font-weight: 800; min-height: 2.9rem; padding: 0 1.25rem; font-size: 0.95rem; cursor: pointer; transition: background 0.2s ease; justify-self: start; }
+.form button:hover:not(:disabled) { background: var(--accent-red-hover, #638f5c); }
+.form button:disabled { opacity: .55; cursor: not-allowed; }
+
+/* O código é lido em voz alta ou copiado caractere a caractere de uma TV. Monoespaçado e
+   espaçado para que a pessoa consiga conferir posição por posição sem contar com o dedo. */
+.codigo { background: #16181d; border: 1px solid rgba(255, 255, 255, 0.18); border-radius: .5rem; color: #fff; font-family: ui-monospace, "SFMono-Regular", "Menlo", monospace; font-size: clamp(1.6rem, 6vw, 2.4rem); font-weight: 700; letter-spacing: .38em; min-height: 4rem; padding: 0 .9rem; text-align: center; text-indent: .38em; width: 100%; }
+.codigo:focus { border-color: var(--accent-purple, #806096); outline: 2px solid rgba(128, 96, 150, .28); }
+.codigo::placeholder { color: #4a4a4a; }
+
+.sucesso { background: #14210f; border: 1px solid rgba(82, 127, 77, .45); border-radius: .5rem; color: #b7e0ad; margin: 1rem 0 0; padding: .8rem; font-size: 0.88rem; }
+.erro { background: #381216; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: .5rem; color: #ff9999; margin: 1rem 0 0; padding: .8rem; font-size: 0.88rem; }

@@ -1,0 +1,64 @@
+{
+	admin off
+	auto_https off
+	persist_config off
+}
+
+:3000 {
+	root * /srv
+	encode zstd gzip
+	header {
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		-Server
+	}
+	# O HTML continua sempre fresco, mas os chunks do Next têm hash no nome e podem ficar no
+	# aparelho por bastante tempo sem repetir o problema antigo de HTML apontando para JS removido.
+	@immutable path /_next/static/*
+	header @immutable Cache-Control "public, max-age=31536000, immutable"
+	@mutable {
+		not path /_next/static/*
+	}
+	header @mutable {
+		Cache-Control "no-store"
+		Pragma "no-cache"
+	}
+	@apk path /downloads/*.apk
+	header @apk {
+		Content-Type "application/vnd.android.package-archive"
+		Content-Disposition "attachment; filename=\"cebola-app.apk\""
+	}
+	@deb path /downloads/*.deb
+	header @deb {
+		Content-Type "application/vnd.debian.binary-package"
+		Content-Disposition "attachment; filename=\"cebola-pc-linux-amd64.deb\""
+	}
+	@appimage path /downloads/*.AppImage
+	header @appimage {
+		Content-Type "application/vnd.appimage"
+		Content-Disposition "attachment; filename=\"cebola-pc-linux-amd64.AppImage\""
+	}
+	@windowsInstaller path /downloads/*.exe
+	header @windowsInstaller {
+		Content-Type "application/vnd.microsoft.portable-executable"
+		Content-Disposition "attachment; filename=\"cebola-pc-windows-x64-setup.exe\""
+	}
+	@rokuPackage path /downloads/cebola-roku.zip
+	header @rokuPackage {
+		Content-Type "application/zip"
+		Content-Disposition "attachment; filename=\"cebola-roku.zip\""
+	}
+	@rokuTelas path /downloads/cebola-roku-telas*.zip
+	header @rokuTelas {
+		Content-Type "application/zip"
+		Cache-Control "no-cache"
+	}
+	@linuxInstaller path /downloads/install-linux.sh
+	header @linuxInstaller {
+		Content-Type "text/x-shellscript; charset=utf-8"
+		Content-Disposition "inline; filename=\"install-linux.sh\""
+	}
+	try_files {path} {path}/index.html /404.html
+	file_server
+}
