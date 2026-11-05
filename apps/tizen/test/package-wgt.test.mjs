@@ -241,3 +241,23 @@ test("verificador recusa motor declarado sem os arquivos do serviço", () => {
     assert.match(result.stderr, /motor local/);
   } finally { rmSync(fixture, { recursive: true, force: true }); }
 });
+
+test("verificador funciona sem ripgrep e continua bloqueando material secreto", () => {
+  for (const secret of [false, true]) {
+    const { fixture, wgt } = makeWgt({ secret });
+    try {
+      const bin = path.join(fixture, "bin");
+      mkdirSync(bin);
+      writeFileSync(path.join(bin, "rg"), "#!/bin/sh\necho 'ripgrep indisponivel' >&2\nexit 127\n", { mode: 0o755 });
+      const result = spawnSync("bash", [verifier, wgt], {
+        cwd: root,
+        encoding: "utf8",
+        env: { ...process.env, PATH: `${bin}${path.delimiter}${process.env.PATH}` },
+      });
+      assert.equal(result.status, secret ? 3 : 0, result.stderr);
+      assert.doesNotMatch(result.stderr, /ripgrep indisponivel/);
+    } finally {
+      rmSync(fixture, { recursive: true, force: true });
+    }
+  }
+});

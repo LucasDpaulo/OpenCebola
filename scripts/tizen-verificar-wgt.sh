@@ -10,12 +10,12 @@ if [[ -n "$(sort <<<"$entries" | uniq -d)" ]]; then
   exit 2
 fi
 for required in config.xml author-signature.xml signature1.xml www/index.html; do
-  rg -qx "$required" <<<"$entries" >/dev/null || {
+  grep -Fqx -- "$required" <<<"$entries" >/dev/null || {
     echo "ERRO: pacote Tizen sem $required" >&2
     exit 2
   }
 done
-if rg -i '\.(p12|pfx|pem|key|jks)$|(^|/)(profiles\.xml|credentials|secrets?)(/|$)' <<<"$entries" >/dev/null; then
+if grep -Ei -- '\.(p12|pfx|pem|key|jks)$|(^|/)(profiles\.xml|credentials|secrets?)(/|$)' <<<"$entries" >/dev/null; then
   echo "ERRO: possível material secreto dentro do .wgt" >&2
   exit 3
 fi
