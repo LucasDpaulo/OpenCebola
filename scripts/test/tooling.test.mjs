@@ -103,3 +103,31 @@ if (args.includes('status')) console.log('API_URL="http://127.0.0.1:55431"\\nANO
     assert.equal(await readFile(new URL('calls.txt',project),'utf8'),calls);
   } finally { await rm(dir,{recursive:true,force:true}); }
 });
+
+test('Git includes schema migrations while ignoring only the local Supabase runtime', async () => {
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const { copyFile } = await import('node:fs/promises');
+  const run = promisify(execFile);
+  const dir = await mkdtemp(path.join(tmpdir(),'opencebola-git-'));
+  try {
+    await copyFile(new URL('../../.gitignore',import.meta.url),path.join(dir,'.gitignore'));
+    await run('git',['init','--quiet'],{cwd:dir});
+    await run('git',['check-ignore','supabase/config.toml'],{cwd:dir});
+    await assert.rejects(run('git',['check-ignore','infra/supabase/migrations/0008_profile_library.sql'],{cwd:dir}), error => error.code === 1);
+  } finally { await rm(dir,{recursive:true,force:true}); }
+});
+
+test('publication audit scans migrations and rejects tracked local Supabase files', async () => {
+  const { mkdir } = await import('node:fs/promises');
+  const dir = await mkdtemp(path.join(tmpdir(),'opencebola-migrations-'));
+  try {
+    await mkdir(path.join(dir,'infra/supabase/migrations'),{recursive:true});
+    await mkdir(path.join(dir,'supabase'));
+    await writeFile(path.join(dir,'infra/supabase/migrations/0001_test.sql'),'-- gh'+'p_'+'A'.repeat(36));
+    await writeFile(path.join(dir,'supabase/config.toml'),'private runtime');
+    const result = await audit(dir,['supabase/config.toml']);
+    assert.ok(result.problems.some(item=>item.includes('infra/supabase/migrations/0001_test.sql')));
+    assert.ok(result.problems.some(item=>item.includes('supabase/config.toml')));
+  } finally { await rm(dir,{recursive:true,force:true}); }
+});

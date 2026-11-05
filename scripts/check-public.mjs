@@ -5,7 +5,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 
-const ignored = new Set(['.git','node_modules','.next','out','dist','build','.build','.buildResult','.gradle','.native-build','target','supabase']);
+const ignored = new Set(['.git','node_modules','.next','out','dist','build','.build','.buildResult','.gradle','.native-build','target']);
 const privateExtensions = /\.(?:pem|key|p12|pfx|jks|keystore|sqlite|sqlite3|db|dump|bak)$/i;
 const generatedExtensions = /\.(?:apk|aab|wgt|zip|tsbuildinfo|log)$/i;
 export function checkText(text) {
@@ -31,7 +31,7 @@ export async function audit(directory, tracked = []) {
   const isPrivateEnv = name => name.startsWith('.env') && !['.env.example','.env.hosted.example','.env.native.example'].includes(name);
   for (const filename of tracked) {
     const base = path.basename(filename);
-    if (isPrivateEnv(base) || privateExtensions.test(base) || generatedExtensions.test(base) || filename.split('/').some(part => ['.aws','.remember','.worktrees','node_modules','.next','out','dist','target'].includes(part))) {
+    if (filename.startsWith("supabase/") || isPrivateEnv(base) || privateExtensions.test(base) || generatedExtensions.test(base) || filename.split('/').some(part => ['.aws','.remember','.worktrees','node_modules','.next','out','dist','target'].includes(part))) {
       problems.push(`${filename}: arquivo privado ou artefato não permitido no Git`);
     }
   }
@@ -39,7 +39,7 @@ export async function audit(directory, tracked = []) {
   async function visit(relative = '') {
     for (const item of await readdir(path.join(directory,relative),{withFileTypes:true})) {
       const filename = path.posix.join(relative,item.name);
-      if (ignored.has(item.name)) continue;
+      if (ignored.has(item.name) || filename === "supabase") continue;
       if (isPrivateEnv(item.name) && !trackedSet.has(filename)) continue;
       if (generatedExtensions.test(item.name) && !trackedSet.has(filename)) continue;
       if (item.isSymbolicLink()) { problems.push(`${filename}: link simbólico não permitido`); continue; }

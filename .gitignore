@@ -27,7 +27,7 @@ target/
 *.key
 local.properties
 .DS_Store
-supabase/
+/supabase/
 apps/web/public/version.txt
 apps/app/android/app/libs/*.aar
 apps/tizen/www/instance.js
